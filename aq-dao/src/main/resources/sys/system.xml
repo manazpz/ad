@@ -1,0 +1,598 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="aq.dao.system.SystemDao">
+
+    <!--插入令牌-->
+    <insert id="insertSytToken" >
+        INSERT INTO system_token
+        VALUES(#{administratorId},#{token},#{exptime,jdbcType=TIMESTAMP},#{refreshToken})
+    </insert>
+
+    <!--查询令牌-->
+    <select id="selectSysToken" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+          st.ADMINISTRATOR_ID as administratorId,
+          st.TOKEN as token,
+          st.EXPTIME as exptime,
+          st.REFRESH_TOKEM as refreshToken
+        from system_token  st
+        WHERE 1=1
+        <if test="administratorId != null">
+            AND st.ADMINISTRATOR_ID = #{administratorId}
+        </if>
+        <if test="refresh != null">
+            AND st.REFRESH_TOKEM = #{refresh}
+        </if>
+        <if test="token != null">
+            AND st.TOKEN = #{token}
+        </if>
+    </select>
+
+    <!--更新令牌-->
+    <update id="updateSytToken" parameterType="java.util.Map">
+        UPDATE system_token
+        <trim prefix="set" suffixOverrides=",">
+            <if test="token!=null">
+                TOKEN = #{token},
+            </if>
+            <if test="exptime!=null">
+                EXPTIME = #{exptime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="refreshToken!=null">
+                REFRESH_TOKEM = #{refreshToken}
+            </if>
+        </trim>
+        WHERE REFRESH_TOKEM = #{refresh}
+    </update>
+
+    <!--删除令牌-->
+    <delete id="deleteSytToken"  parameterType="java.util.Map" >
+        DELETE system_token WHERE ADMINISTRATOR_ID = #{administratorId}
+    </delete>
+
+    <!--登录-->
+    <select id="selectSysLogin" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT * FROM system_administrator sa WHERE sa.USER_NAME = #{userName} AND sa.IS_VALID = 'Y'
+    </select>
+
+    <!--查询用户信息-->
+    <select id="selectUserInfo" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+            sa.ID AS id,
+            sa.NICK_NAME AS nickName,
+            sa.HEAD_PORTRAIT AS headPortrait,
+            sa.USER_NAME AS userName,
+            sa.PHONE AS phone,
+            sa.EMAIL AS email,
+            sa.WEI_XIN AS weiXin,
+            sa.QQ AS qq,
+            sa. STATUS AS statusKey,
+            sc. NAME AS statusName,
+            sa.CREATE_TIME AS createTime,
+            sa.UPDATE_TIME AS updateTime,
+            sa.IS_VALID AS isValid
+        FROM
+            system_administrator sa
+        LEFT JOIN system_config sc ON sc.KEY_WORD = sa. STATUS
+        WHERE sa.IS_VALID = 'Y'
+        <if test="id != null">
+            AND sa.ID = #{id}
+        </if>
+        <if test="query != null">
+            AND (sa.NICK_NAME  LIKE  CONCAT('%', #{query}, '%')  OR PE.USER_NAME LIKE CONCAT('%', #{query}, '%'))
+        </if>
+        <if test="orderBy != null">
+            ORDER BY #{orderBy}
+        </if>
+    </select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!--令牌-->
+    <select id="selectSysSecurityById" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT A.FD_ID,A.FD_SESSIONID,A.FD_ISAUTHENTICATED,A.FD_EXPTIME,A.FD_EXTEND1,A.FD_TICKET,A.FD_USERID
+        from SYS_SECURITY  A
+        WHERE A.FD_ID = #{fdId}
+    </select>
+
+    <!--删除令牌-->
+    <delete id="deleteSysSecurityByUid"  parameterType="java.util.Map" >
+        DELETE SYS_SECURITY WHERE FD_USERID = #{FDUSERID}
+    </delete>
+
+    <!--用户权限-->
+    <select id="selectSysUserPermission" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        *
+        FROM
+        SYS_PERMISSION P
+        WHERE
+        (
+        P .FD_ID IN (
+        SELECT
+        FD_PERMISSION
+        FROM
+        SYS_ROLEPERMISSION
+        WHERE
+        FD_ROLEID IN (
+        SELECT
+        FD_ROLEID
+        FROM
+        SYS_ROLEUSER
+        WHERE
+        FD_USERID =#{fdUserId}
+        )
+        )
+        OR P .FD_ID IN (
+        SELECT
+        FD_PERMISSION
+        FROM
+        SYS_USERPERMISSION
+        WHERE
+        FD_USERID =#{fdUserId}
+        )
+        )
+        AND P .FD_ISENABLE = 1
+        ORDER BY P.FD_MODULE
+    </select>
+
+    <!--查询用户信息 BY USERID-->
+    <select id="selectSysOrgElementByUid" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT FD_ID,FD_NAME,FD_NO FROM SYS_ORG_ELEMENT WHERE FD_ID =#{fdUserId}
+    </select>
+
+    <!--查询用户信息 BY UserName or Email or 用户编码-->
+    <select id="selectSysOrgPersonByUserName" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT * FROM SYS_ORG_PERSON WHERE FD_MOBILE_NO = #{FD_FLAG} OR FD_EMAIL = #{FD_FLAG} OR FD_LOGIN_NAME = #{FD_FLAG}
+    </select>
+
+
+    <!--查询用户信息-->
+    <select id="queryUser" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT E.FD_ID AS ID, PE.FD_NAME AS ORGNAME,PE.FD_ID AS ORGID, PE.FD_NO AS ORGNO,PEE.FD_ID AS PARENTID, PEE.FD_NAME AS NAMEPARENT,E.FD_NAME AS NAME,E.FD_NO AS NO,
+        P.FD_MOBILE_NO AS MOBILENO,P.FD_EMAIL AS EMAIL FROM SYS_ORG_ELEMENT E
+        INNER JOIN SYS_ORG_PERSON P ON P.FD_ID = E.FD_ID
+        INNER JOIN SYS_ORG_ELEMENT PE ON E.FD_PARENTORGID = PE.FD_ID
+        INNER JOIN SYS_ORG_ELEMENT PEE ON E.FD_PARENTID = PEE.FD_ID
+        WHERE  E.FD_ORG_TYPE = 8
+        <if test="id != null">
+            AND E.FD_ID = #{id}
+        </if>
+        <if test="orgId != null">
+            AND PE.FD_ID = #{orgId}
+        </if>
+        <if test="parentId != null">
+            AND PEE.FD_ID = #{parentId}
+        </if>
+        <if test="query != null">
+            AND (E.FD_NAME  LIKE  CONCAT('%', #{query}, '%')  OR PE.FD_NAME LIKE CONCAT('%', #{query}, '%') OR PEE.FD_NAME LIKE CONCAT('%', #{query}, '%'))
+        </if>
+        <if test="orderBy != null">
+            ORDER BY #{orderBy}
+        </if>
+    </select>
+
+    <!--查询组织信息-->
+    <select id="queryOrganization" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT E.FD_ID AS ID,E.FD_NAME AS NAME, PE.FD_ID AS ORGID, PE.FD_NAME AS ORGNAME,PE.FD_NO AS ORGNO,PEE.FD_ID AS PARENTID,
+        PEE.FD_NAME AS NAMEPARENT,E.FD_NO AS NO,E.FD_ORG_TYPE AS ORGTYPE
+        FROM SYS_ORG_ELEMENT E
+        INNER JOIN SYS_ORG_ELEMENT PE ON E.FD_PARENTORGID = PE.FD_ID
+        INNER JOIN SYS_ORG_ELEMENT PEE ON E.FD_PARENTID = PEE.FD_ID
+        <where>
+             1 = 1
+            <if test="orgType != null">
+                AND E.FD_ORG_TYPE IN
+                <foreach item="item" index="index" collection="orgType" open="("
+                                                separator="," close=")">
+                #{item}
+            </foreach>
+            </if>
+            <if test="id != null">
+                AND E.FD_ID = #{id}
+            </if>
+            <if test="orgId != null">
+                AND PE.FD_ID = #{orgId}
+            </if>
+            <if test="parentId != null and parentId !=''">
+                AND PEE.FD_ID = #{parentId}
+            </if>
+            <if test="parentId != null and parentId ==''">
+                AND PEE.FD_ID IS NULL
+            </if>
+            <if test="isAvailable != null">
+                AND PEE.FD_IS_AVAILABLE = #{isAvailable}
+            </if>
+            <if test="query != null">
+                AND (E.FD_NAME  LIKE  CONCAT('%', #{query}, '%')  OR PE.FD_NAME LIKE CONCAT('%', #{query}, '%') OR PEE.FD_NAME LIKE CONCAT('%', #{query}, '%'))
+            </if>
+        </where>
+        <if test="orderBy != null">
+            ORDER BY #{orderBy}
+        </if>
+    </select>
+
+    <!--查询组织信息-->
+    <select id="queryOrganizationByUid" resultType="java.util.Map" parameterType="java.util.Map">
+
+    </select>
+    <!--查询微信用户信息-->
+    <select id="selectUserInfoPage" resultType="java.util.Map" parameterType="java.util.Map">
+        select ZUI.FD_ID AS fdId, ZUI.FD_NAME AS fdName, ZUI.FD_MOBILE_NO AS fdMobileNo, ZUI.FD_COMPANY AS fdOrgName, ZUI.FD_IS_AVAILABLE AS fdIsAvailable
+        FROM ZDEV_USER_INFO ZUI WHERE 1=1
+        <if test="FD_NAME != null">
+            AND ZUI.FD_NAME = #{FD_NAME}
+        </if>
+        <if test="FD_ID != null">
+            AND ZUI.FD_ID = #{FD_ID}
+        </if>
+        <if test="FD_MOBILE_NO != null">
+            AND ZUI.FD_MOBILE_NO = #{FD_MOBILE_NO}
+        </if>
+        <if test="query != null">
+            AND (ZUI.FD_NAME  LIKE '%'||#{query}||'%' OR ZUI.FD_MOBILE_NO LIKE '%'||#{query}||'%')
+        </if>
+        <if test="orderBy != null">
+            ORDER BY #{FD_CREATE_TIME}
+        </if>
+    </select>
+
+    <!--更新权限微信用户信息-->
+    <update id="updateUserInfo" parameterType="java.util.Map">
+        UPDATE ZDEV_USER_INFO
+        <trim prefix="set" suffixOverrides=",">
+            <if test="FDMOBILENO!=null">
+                FD_MOBILE_NO = #{FDMOBILENO} ,
+            </if>
+            <if test="FDNAME!=null">
+                FD_NAME = #{FDNAME},
+            </if>
+            <if test="FDORGNAME!=null">
+                FD_COMPANY = #{FDORGNAME},
+            </if>
+
+            <if test="FDISAVAILABLE!=null">
+                FD_IS_AVAILABLE = #{FDISAVAILABLE}
+            </if>
+        </trim>
+        WHERE FD_ID = #{FDID}
+    </update>
+
+    <!--新增微信用户信息-->
+    <insert id="insertZdevUserInfo" >
+        INSERT INTO ZDEV_USER_INFO
+        VALUES(#{FDID},#{FDMOBILENO},#{FDNAME},#{FDORGNAME},#{FDISAVAILABLE},#{FDCREATETIME})
+    </insert>
+
+    <!--用户添加角色-->
+    <insert id="insertSysRoleUser" >
+        INSERT INTO SYS_ROLEUSER
+        VALUES(#{FDID},#{FDUSERID},#{FDROLEID},#{FDCREATOR},to_date(#{FDCREATETIME}, 'yyyy-mm-dd hh24:mi:ss'))
+    </insert>
+
+    <!--查询用户拥有的角色-->
+    <select id="selectSysRoleUser" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT * FROM SYS_ROLEUSER  ZSRU
+        LEFT JOIN SYS_ROLE ZSR ON ZSR.FD_ID = ZSRU.FD_ROLEID
+        WHERE 1 = 1
+        <if test="FDUSERID != null">
+            AND ZSRU.FD_USERID = #{FDUSERID}
+        </if>
+        <if test="FDROLEID != null">
+            AND ZSRU.FD_ROLEID = #{FDROLEID}
+        </if>
+        ORDER BY ZSR.FD_MODULE
+    </select>
+
+    <!--删除用户拥有的角色-->
+    <delete id="deleteSysRoleUser" parameterType="java.util.Map">
+        DELETE ROLEUSER WHERE FD_ID = #{FDID}
+    </delete>
+
+    <!--查询角色拥有的权限-->
+    <select id="selectSysPermissionRole" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        A.FD_ID AS FD_ROLE_ID ,C.FD_NAME AS FD_ROLENAME ,B.FD_NAME AS FD_PERMISSIONNAME,B.FD_TYPE AS FD_PERMISSIONTYPE , B.FD_DESC AS FD_DESC FROM SYS_ROLEPERMISSION A
+        LEFT JOIN SYS_PERMISSION B ON A.FD_PERMISSION = B.FD_ID
+        LEFT JOIN SYS_ROLE C ON A.FD_ROLEID = C.FD_ID
+        WHERE 1 = 1
+        <if test="FDROLEID != null">
+            AND A.FD_ROLEID = #{FDROLEID}
+        </if>
+        <if test="FDPERMISSION != null">
+            AND A.FD_PERMISSION = #{FDPERMISSION}
+        </if>
+        ORDER BY B.FD_MODULE
+    </select>
+
+    <!--删除用户拥有的权限-->
+    <delete id="deleteSysPermissionUser" parameterType="java.util.Map">
+        DELETE SYS_USERPERMISSION WHERE FD_ID = #{FDID}
+    </delete>
+
+    <!--查询角色信息-->
+    <select id="selectSysRole" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT R.FD_ID AS fdId,R.FD_MODULE AS fdModule,R.FD_TYPE AS fdType,R.FD_NAME AS fdName,R.FD_DESC AS fdDesc FROM SYS_ROLE R WHERE 1 = 1
+        <if test="fdModule != null">
+            AND R.FD_MODULE = #{fdModule}
+        </if>
+        <if test="query != null">
+            AND R.FD_NAME LIKE '%'||#{query}||'%' OR R.FD_MODULE LIKE '%'||#{query}||'%' OR R.FD_TYPE LIKE '%'||#{query}||'%'
+        </if>
+        ORDER BY R.FD_MODULE
+    </select>
+
+    <!--更新角色信息-->
+    <update id="updateSysRole" parameterType="java.util.Map">
+        UPDATE SYS_ROLE
+        <trim prefix="set" suffixOverrides=",">
+            <if test="FDTYPE!=null">
+                FD_TYPE = #{FDTYPE} ,
+            </if>
+            <if test="FDMODULE!=null">
+                FD_MODULE = #{FDMODULE},
+            </if>
+            <if test="FDNAME!=null">
+                FD_NAME = #{FDNAME},
+            </if>
+            <if test="FDDESC!=null">
+                FD_DESC = #{FDDESC},
+            </if>
+        </trim>
+        WHERE FD_ID = #{FDID}
+    </update>
+
+    <!--新增角色信息-->
+    <insert id="insertSysRole" >
+        INSERT INTO SYS_ROLE
+        VALUES(#{FDID},#{FDMODULE,jdbcType=VARCHAR},#{FDTYPE,jdbcType=VARCHAR},#{FDNAME,jdbcType=VARCHAR},#{FDDESC,jdbcType=VARCHAR})
+    </insert>
+
+    <!--角色添加权限-->
+    <insert id="insertSysPermissionRole" >
+        INSERT INTO SYS_ROLEPERMISSION
+        VALUES(#{FDID},#{FDROLEID},#{FDPERMISSION},#{FDCREATOR},to_date(#{FDCREATETIME}, 'yyyy-mm-dd hh24:mi:ss'))
+    </insert>
+
+    <!--查询权限信息-->
+    <select id="selectSysPermission" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT P.FD_ID AS fdId,P.FD_TYPE AS fdType,P.FD_MODULE AS fdModule,P.FD_NAME AS fdName,P.FD_DESC AS fdDesc,P.FD_ISENABLE AS fdIsEnable,P.FD_EXTEND1 AS fdExtend1,P.FD_EXTEND2 AS fdExtend2,P.FD_GROP AS FDGROP FROM SYS_PERMISSION P WHERE 1 = 1
+        <if test="fdModule != null">
+            AND  P.FD_MODULE = #{fdModule}
+        </if>
+        <if test="fdType != null">
+            AND P.FD_TYPE = #{fdType}
+        </if>
+        <if test="query != null">
+            AND  (P.FD_NAME LIKE '%'||#{query}||'%' OR P.FD_DESC LIKE '%'||#{query}||'%')
+        </if>
+        ORDER BY P.FD_MODULE
+    </select>
+
+    <!--更新权限信息-->
+    <update id="updateSysPermission" parameterType="java.util.Map">
+        UPDATE SYS_PERMISSION
+        <trim prefix="set" suffixOverrides=",">
+            <if test="FDTYPE!=null">
+                FD_TYPE = #{FDTYPE} ,
+            </if>
+            <if test="FDMODULE!=null">
+                FD_MODULE = #{FDMODULE},
+            </if>
+            <if test="FDNAME!=null">
+                FD_NAME = #{FDNAME},
+            </if>
+            <if test="FDDESC!=null">
+                FD_DESC = #{FDDESC},
+            </if>
+            <if test="FDISENABLE!=null">
+                FD_ISENABLE = #{FDISENABLE} ,
+            </if>
+            <if test="FDEXTEND1!=null">
+                FD_EXTEND1 = #{FDEXTEND1},
+            </if>
+            <if test="FDEXTEND2!=null">
+                FDEXTEND2 = #{FDEXTEND2},
+            </if>
+            <if test="FDGROP!=null">
+                FDGROP = #{FDGROP},
+            </if>
+        </trim>
+        WHERE FD_ID = #{FDID}
+    </update>
+
+    <!--新增权限信息-->
+    <insert id="insertSysPermission" >
+        INSERT INTO SYS_PERMISSION
+        VALUES(#{FDID},#{FDTYPE},#{FDMODULE},#{FDNAME},#{FDDESC},#{FDISENABLE},to_date(#{FDCREATETIME}, 'yyyy-mm-dd hh24:mi:ss'),#{FDEXTEND1},#{FDEXTEND2},#{FDGROP})
+    </insert>
+
+    <!--用户添加权限-->
+    <insert id="insertSysPermissionUser" >
+        INSERT INTO SYS_USERPERMISSION
+        VALUES(#{FDID},#{FDUSERID},#{FDPERMISSION},#{FDCREATOR},to_date(#{FDCREATETIME}, 'yyyy-mm-dd hh24:mi:ss'))
+    </insert>
+
+    <!--查询用户拥有的权限-->
+    <select id="selectSysPermissionUser" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT DISTINCT * FROM (
+        SELECT
+        ZSP.*
+        FROM
+        SYS_PERMISSION ZSP
+        LEFT JOIN SYS_USERPERMISSION ZSUP ON ZSP.FD_ID = ZSUP.FD_PERMISSION
+        WHERE
+        1 = 1
+        <if test="FDUSERID != null">
+            AND ZSUP.FD_USERID = #{FDUSERID}
+        </if>
+        <if test="FDPERMISSION != null">
+            AND ZSP.FD_ID = #{FDPERMISSION}
+        </if>
+        UNION ALL
+        SELECT
+        ZSP.*
+        FROM
+        SYS_PERMISSION ZSP
+        LEFT JOIN SYS_ROLEPERMISSION ZSRP ON ZSRP.FD_PERMISSION = ZSP.FD_ID
+        LEFT JOIN SYS_ROLEUSER ZSR ON ZSR.FD_ROLEID = ZSRP.FD_ROLEID
+        WHERE
+        1 = 1
+        <if test="FDUSERID != null">
+            AND ZSR.FD_USERID = #{FDUSERID}
+        </if>
+        <if test="FDPERMISSION != null">
+            AND ZSP.FD_ID = #{FDPERMISSION}
+        </if>
+        ) PM
+        ORDER BY PM.FD_MODULE,PM.FD_TYPE
+
+    </select>
+
+    <!--删除用户拥有的权限-->
+    <delete id="deleteSysPermissionRole"  parameterType="java.util.Map">
+        DELETE FROM SYS_ROLEPERMISSION WHERE  FD_ID = #{FDROLEID}
+    </delete>
+
+    <!--新增同步数据-->
+    <insert id="insertSysSync">
+        INSERT INTO ZDEV_SYS_SYNC
+        VALUES(#{FDID,jdbcType=VARCHAR},#{FDDATAID,jdbcType=VARCHAR},#{FDTABLENAME,jdbcType=VARCHAR},#{FDORDERNO,jdbcType=NUMERIC},
+        #{FDSTATUSSAP,jdbcType=VARCHAR},#{FDSTATUSMID,jdbcType=NUMERIC},#{FDISSYNC,jdbcType=NUMERIC},#{FDDESC,jdbcType=VARCHAR},
+        #{FDOPTION,jdbcType=VARCHAR},#{FDCREATETI,jdbcType=TIMESTAMP},#{FDMSGSAP,jdbcType=VARCHAR},
+        #{FDMSGMID,jdbcType=VARCHAR},#{FDCRMSTATUS,jdbcType=NUMERIC},#{FDMZTSTATUS,jdbcType=NUMERIC})
+    </insert>
+
+    <!--更新同步数据-->
+    <update id="updateSysSync" parameterType="java.util.Map">
+        UPDATE ZDEV_SYS_SYNC
+        <trim prefix="set" suffixOverrides=",">
+            <if test="FD_ISSYNC!=null">
+                FD_ISSYNC = #{FD_ISSYNC},
+            </if>
+            <if test="FD_STATUS_SAP!=null">
+                FD_STATUS_SAP = #{FD_STATUS_SAP},
+            </if>
+            <if test="FD_STATUS_MID!=null">
+                FD_STATUS_MID = #{FD_STATUS_MID},
+            </if>
+            <if test="FD_MSG_SAP!=null">
+                FD_MSG_SAP = #{FD_MSG_SAP},
+            </if>
+            <if test="FD_MSG_MID!=null">
+                FD_MSG_MID = #{FD_MSG_MID},
+            </if>
+            <if test="FD_DESC!=null">
+                FD_DESC = #{FD_DESC},
+            </if>
+            <if test="FD_ZT_STATUS!=null">
+                FD_ZT_STATUS = #{FD_ZT_STATUS},
+            </if>
+            <if test="FD_CRM_STATUS!=null">
+                FD_CRM_STATUS = #{FD_CRM_STATUS}
+            </if>
+        </trim>
+        WHERE FD_ID = #{FD_ID}
+    </update>
+
+    <!--查询同步数据-->
+    <select id="selectSysSync" resultType="java.util.Map" parameterType="java.util.Map" >
+        SELECT * FROM ZDEV_SYS_SYNC A WHERE 1 = 1
+        <if test="FDDATAID != null">
+            AND A.FD_DATA_ID = #{FDDATAID}
+        </if>
+        <if test="FDISSYNC != null">
+            AND  A.FD_ISSYNC = #{FDISSYNC}
+        </if>
+
+        <if test="FDSTATUSSAP != null">
+            AND  A.FD_STATUS_SAP = #{FDSTATUSSAP}
+        </if>
+        <if test="FDSTATUSMID != null">
+            AND A.FD_STATUS_MID = #{FDSTATUSMID}
+        </if>
+        <if test="FDTABLENAME != null">
+            AND A.FD_TABLE_NAME = #{FDTABLENAME}
+        </if>
+        <if test="FD_ZT_STATUS != null">
+            AND A.FD_ZT_STATUS = #{FD_ZT_STATUS}
+        </if>
+        <if test="FD_CRM_STATUS != null">
+            AND A.FD_CRM_STATUS = #{FD_CRM_STATUS}
+        </if>
+        <if test="query != '' and query != null">
+            AND A.FD_DATA_ID = #{query}
+        </if>
+        ORDER BY A.FD_CREATETIME DESC, A.FD_DESC DESC
+    </select>
+
+    <!--查询同步日志错误信息-->
+    <select id="selectSysErrorMsg" resultType="java.util.Map" parameterType="java.util.Map" >
+        SELECT * FROM ZDEV_SYS_SYNC A WHERE 1 = 1
+        <if test="FDSTATUSSAP != null">
+            AND A.FD_STATUS_SAP = #{FDSTATUSSAP}
+        </if>
+        <if test="FDSTATUSMID != null">
+            AND A.FD_STATUS_MID = #{FDSTATUSMID}
+        </if>
+        <if test="FDDATAID != null">
+            AND A.FD_DATA_ID = #{FDDATAID}
+        </if>
+    </select>
+
+    <select id="selectWxPermission" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT DISTINCT
+        ZSP.*
+        FROM
+        SYS_PERMISSION ZSP
+        LEFT JOIN SYS_USERPERMISSION ZSU ON ZSU.FD_PERMISSION = ZSP.FD_ID
+        LEFT JOIN SYS_ROLEPERMISSION ZSR ON ZSR.FD_PERMISSION = ZSP.FD_ID
+        LEFT JOIN SYS_ROLEUSER ZSRU ON ZSRU.FD_ROLEID = ZSR.FD_ROLEID
+        LEFT JOIN SYS_ORG_PERSON SOP ON (SOP.FD_ID = ZSU.FD_USERID or SOP.FD_ID = ZSRU.FD_USERID)
+        LEFT JOIN ZDEV_USER_INFO ZUI ON (ZUI.FD_ID = ZSU.FD_USERID or ZUI.FD_ID = ZSRU.FD_USERID)
+        WHERE
+        ZSP.FD_ISENABLE = '1'
+        <if test="fdModule != null">
+            AND ZSP.FD_MODULE = #{fdModule}
+        </if>
+        <if test="fdType != null">
+            AND ZSP.FD_TYPE = #{fdType}
+        </if>
+        AND (
+        <if test="userid != null">
+            SOP.FD_LOGIN_NAME = #{userid}
+        </if>
+        <if test="userid == null">
+            SOP.FD_LOGIN_NAME = ''
+        </if>
+        <if test="mobile != null">
+            or SOP.FD_MOBILE_NO = #{mobile} or ZUI.FD_MOBILE_NO = #{mobile})
+        </if>
+        <if test="mobile == null">
+            or SOP.FD_MOBILE_NO = '' or ZUI.FD_MOBILE_NO = '')
+        </if>
+        ORDER BY ZSP.FD_CREATETIME
+    </select>
+</mapper>
