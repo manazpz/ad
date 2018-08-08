@@ -51,7 +51,7 @@
             AND sc.ID = #{id}
         </if>
         <if test="type != null">
-            AND sc.TYPE = #{type}
+            AND sc.TYPE in (${type})
         </if>
     </select>
 

@@ -44,7 +44,7 @@ public class CustomerController extends aq.controller.restful.System {
         writerJson(response,out,customerService.updateCustomer(requestJson));
     }
 
-    //更新客户
+    //删除客户
     @RequestMapping(value = "/delete",method = RequestMethod.POST)
     @ResponseBody
     public void deleteCustomer(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){

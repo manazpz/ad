@@ -16,4 +16,7 @@ public interface UserDao {
 
     //获取用户信息
     int updateUserInfo(Map<String,Object> map);
+
+    //删除/恢复用户
+    int deleteUser(Map<String,Object> map);
 }
