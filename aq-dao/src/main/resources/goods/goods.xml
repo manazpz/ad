@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="aq.dao.goods.GoodsDao">
+
+    <!--插入客户数据-->
+    <insert id="insertGoods" >
+        INSERT INTO ZDEV_GOODS_MAIN
+        VALUES(#{id},#{code},#{outcode},#{name},#{alias},#{typeKey}
+        ,#{unitKey},#{price},'Y',#{createUser},#{lastCreateUser},#{createTime,jdbcType=TIMESTAMP},#{lastCreateTime,jdbcType=TIMESTAMP},#{remarks})
+    </insert>
+
+    <!--查询客户主数据-->
+    <select id="selectGoodsList" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+            ZG.FD_ID AS goodsId,
+            ZG.FD_CODE AS code,
+            ZG.FD_NAME AS name,
+            ZG.FD_ALIAS AS alias,
+            ZG.FD_TYPE AS typeKey,
+            SC. NAME AS typeName,
+            ZG.FD_UNIT AS unitKey,
+            SCS. NAME AS unitName,
+            ZG.FD_PRICE AS price,
+            ZG.CREATE_USER AS createUserId,
+            CREATE_USER.NICK_NAME AS createUserName,
+            ZG.LAST_CREATE_USER AS lastCreateUserId,
+            LAST_CREATE_USER.NICK_NAME AS lastCreateUserName,
+            DATE_FORMAT(
+            ZG.CREATE_TIME,
+            '%Y-%m-%d %H:%i:%S'
+            ) AS createTime,
+            DATE_FORMAT(
+            ZG.LAST_CREATE_TIME,
+            '%Y-%m-%d %H:%i:%S'
+            ) AS lastCreateTime,
+            ZG.FD_STATUS AS status,
+            ZG.FD_REMARKS AS remarks
+        FROM
+            ZDEV_GOODS_MAIN ZG
+        LEFT JOIN system_config SC ON SC.KEY_WORD = ZG.FD_TYPE
+        AND SC.TYPE = 'GOODS'
+        LEFT JOIN system_config SCS ON SCS.KEY_WORD = ZG.FD_UNIT
+        AND SCS.TYPE = 'UNIT'
+        LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZG.CREATE_USER
+        LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZG.LAST_CREATE_USER
+        WHERE 1=1
+        <if test="goodsId != null">
+            AND ZG.FD_ID = #{goodsId}
+        </if>
+        <if test="name != null and name != ''">
+            AND ZG.FD_NAME = #{name}
+        </if>
+        <if test="typeKey != null and typeKey != ''">
+            AND ZG.FD_TYPE = #{typeKey}
+        </if>
+        ORDER BY ZG.FD_STATUS ASC
+        <if test="sort != null">
+            ,#{sort}
+        </if>
+    </select>
+
+    <!--更新客户主数据-->
+    <update id="updateGoods" parameterType="java.util.Map">
+        UPDATE ZDEV_GOODS_MAIN ZG
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null and name != ''">
+                ZG.FD_NAME = #{name},
+            </if>
+            <if test="alias!=null and alias != ''">
+                ZG.FD_ALIAS = #{alias},
+            </if>
+            <if test="unitKey!=null and unitKey != ''">
+                ZG.FD_UNIT = #{unitKey},
+            </if>
+            <if test="typeKey!=null and typeKey != ''">
+                ZG.FD_TYPE = #{typeKey},
+            </if>
+            <if test="price!=null and price != ''">
+                ZG.FD_PRICE = #{price},
+            </if>
+            <if test="lastCreateUser!=null and lastCreateUser != ''">
+                ZG.LAST_CREATE_USER = #{lastCreateUser},
+            </if>
+            <if test="lastCreateTime!=null and lastCreateTime != ''">
+                ZG.LAST_CREATE_TIME = #{lastCreateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remarks!=null and remarks != ''">
+                ZG.FD_REMARKS = #{remarks},
+            </if>
+        </trim>
+        WHERE ZG.FD_ID = #{id}
+    </update>
+
+    <!--删除/恢复客户信息-->
+    <update id="deleteGoods" parameterType="java.util.Map">
+        UPDATE ZDEV_GOODS_MAIN ZG
+        <trim prefix="set" suffixOverrides=",">
+            <if test="isValid!=null and isValid != ''">
+                ZG.FD_STATUS = #{isValid},
+            </if>
+        </trim>
+        WHERE ZG.FD_ID = #{id}
+    </update>
+
+</mapper>

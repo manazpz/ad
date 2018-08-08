@@ -30,6 +30,7 @@
         <mapper resource="customer/customer.xml"/>
         <mapper resource="config/config.xml"/>
         <mapper resource="user/user.xml"/>
+        <mapper resource="goods/goods.xml"/>
     </mappers>
 
 </configuration> 
