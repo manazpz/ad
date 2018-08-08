@@ -126,26 +126,18 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
     @Override
     public JsonObject queryUserInfo(JsonObject jsonObject) {
         Rtn rtn = new Rtn("System");
-        JsonObject data = new JsonObject();
-        Map<String,Object> mapJson = new HashMap<>();
-        mapJson = GsonHelper.getInstance().fromJson(jsonObject, Map.class);
-        List<Map<String, Object>> tokens = sysDao.selectSysToken(mapJson);
-        if(tokens.size() <= 0){
-            rtn.setCode(50002);
-            rtn.setMessage("token不符合!");
-            return Func.functionRtnToJsonObject.apply(rtn);
+        jsonObject.addProperty("service","System");
+        JsonObject user = verifyToken(jsonObject,(map)->{
+            return sysDao.selectSysToken(map);
+        },(map)->{
+            return sysDao.selectUserInfo(map);
+        });
+        if(!StringUtil.isEmpty(user.get("code"))){
+            return user;
         }
-
-        if(isTokenExpire(tokens.get(0))) {
-            rtn.setCode(50001);
-            rtn.setMessage("error");
-            return Func.functionRtnToJsonObject.apply(rtn);
-        }
-        List<Map<String, Object>> results = sysDao.selectUserInfo(mapJson);
-        data = GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(results.get(0))).getAsJsonObject();
         rtn.setCode(200);
         rtn.setMessage("success");
-        rtn.setData(data);
+        rtn.setData(user);
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 

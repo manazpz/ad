@@ -9,7 +9,6 @@ import aq.service.system.Func;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.*;
 import java.util.function.Function;
@@ -24,8 +23,8 @@ public class BaseServiceImpl implements BaseService {
         data.addProperty("total",0);
         data.add("items",jsonArray);
         Map<String,Object> map = new HashMap<>();
-        Integer pageNum = StringUtil.isEmpty(jsonObject.get("pageNum"))?1:Integer.parseInt(jsonObject.get("pageNum").toString());
-        Integer pageSize = jsonObject.get("pageSize") == null ? 1 : Integer.parseInt(jsonObject.get("pageSize").toString());
+        Integer pageNum = StringUtil.isEmpty(jsonObject.get("pageNum"))?1:Integer.parseInt(jsonObject.get("pageNum").getAsString());
+        Integer pageSize = jsonObject.get("pageSize") == null ? 1 : Integer.parseInt(jsonObject.get("pageSize").getAsString());
         PageHelper.startPage(pageNum,pageSize);
         map = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         if (map.get("list")!=null){
@@ -58,35 +57,46 @@ public class BaseServiceImpl implements BaseService {
         return  Func.functionRtnToJsonObject.apply(rtn);
     }
 
-    @Override
-    public JsonObject insert(JsonObject jsonObject, Function<Map<String, Object>, List<Map<String, Object>>> func) {
-        Rtn rtn = new Rtn(jsonObject.get("service").getAsString());
-        rtn.setCode(200);
-        rtn.setMessage("success");
-        return Func.functionRtnToJsonObject.apply(rtn);
-    }
-
-    @Override
-    public JsonObject update(JsonObject jsonObject, Function<Map<String, Object>, List<Map<String, Object>>> func) {
-        Rtn rtn = new Rtn(jsonObject.get("service").getAsString());
-        rtn.setCode(200);
-        rtn.setMessage("success");
-        return Func.functionRtnToJsonObject.apply(rtn);
-    }
-
-    @Override
-    public JsonObject delete(JsonObject jsonObject, Function<Map<String, Object>, List<Map<String, Object>>> func) {
-        Rtn rtn = new Rtn(jsonObject.get("service").getAsString());
-        rtn.setCode(200);
-        rtn.setMessage("success");
-        return Func.functionRtnToJsonObject.apply(rtn);
-    }
-
-    @Override
     public Boolean isTokenExpire(Map map) {
         Date date1 = new Date();
         Date date2 = (Date) map.get("exptime");
         Boolean aBoolean = DateTime.compareDate(date1, date2);
         return aBoolean;
+    }
+
+    @Override
+    public JsonObject verifyToken(JsonObject jsonObject, Function<Map<String, Object>, List<Map<String, Object>>> func, Function<Map<String, Object>, List<Map<String, Object>>> user) {
+        Rtn rtn = new Rtn(jsonObject.get("service").getAsString());
+        Map<String,Object> map = new HashMap<>();
+        JsonObject data = new JsonObject();
+        map = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        if (StringUtil.isEmpty(jsonObject.get("token"))) {
+            rtn.setCode(50002);
+            rtn.setMessage("token不符合!");
+            return Func.functionRtnToJsonObject.apply(rtn);
+        }
+        List<Map<String, Object>> tokens = func.apply(map);
+        if(tokens.size() <= 0 || StringUtil.isEmpty(jsonObject.get("token"))){
+            rtn.setCode(50002);
+            rtn.setMessage("token不符合!");
+            return Func.functionRtnToJsonObject.apply(rtn);
+        }
+        if(isTokenExpire(tokens.get(0))) {
+            rtn.setCode(50001);
+            rtn.setMessage("error");
+            return Func.functionRtnToJsonObject.apply(rtn);
+        }
+        if(user != null) {
+            map.clear();
+            map.put("token",jsonObject.get("token").getAsString());
+            List<Map<String, Object>> users = user.apply(map);
+            if(users.size() <= 0) {
+                rtn.setCode(60003);
+                rtn.setMessage("当前登录者不存在!");
+                return Func.functionRtnToJsonObject.apply(rtn);
+            }
+            data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(users.get(0))).getAsJsonObject();
+        }
+        return  data;
     }
 }

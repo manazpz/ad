@@ -1,5 +1,6 @@
 package aq.service.base;
 
+import aq.common.other.Rtn;
 import com.google.gson.JsonObject;
 import java.util.List;
 import java.util.Map;
@@ -16,16 +17,7 @@ public interface BaseService {
     //查询
     JsonObject query(JsonObject jsonObject, Function<Map<String,Object>,List<Map<String,Object>>> func);
 
-    //插入
-    JsonObject insert(JsonObject jsonObject, Function<Map<String,Object>,List<Map<String,Object>>> func);
-
-    //更新
-    JsonObject update(JsonObject jsonObject, Function<Map<String,Object>,List<Map<String,Object>>> func);
-
-    //删除
-    JsonObject delete(JsonObject jsonObject, Function<Map<String,Object>,List<Map<String,Object>>> func);
-
-    //token是否过期
-    Boolean isTokenExpire(Map map);
+    //验证token
+    JsonObject verifyToken(JsonObject jsonObject, Function<Map<String, Object>, List<Map<String, Object>>> func,Function<Map<String, Object>, List<Map<String, Object>>> user);
 
 }

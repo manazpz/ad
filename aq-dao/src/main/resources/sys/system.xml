@@ -69,18 +69,19 @@
             sa.QQ AS qq,
             sa. STATUS AS statusKey,
             sc. NAME AS statusName,
-            sa.CREATE_TIME AS createTime,
-            sa.UPDATE_TIME AS updateTime,
+            DATE_FORMAT(sa.CREATE_TIME,'%Y-%m-%d %H:%i:%S') AS createTime,
+            DATE_FORMAT(sa.UPDATE_TIME,'%Y-%m-%d %H:%i:%S') AS updateTime,
             sa.IS_VALID AS isValid
         FROM
             system_administrator sa
         LEFT JOIN system_config sc ON sc.KEY_WORD = sa. STATUS
+        LEFT JOIN system_token st on sa.ID = st.ADMINISTRATOR_ID
         WHERE sa.IS_VALID = 'Y'
         <if test="id != null">
             AND sa.ID = #{id}
         </if>
-        <if test="query != null">
-            AND (sa.NICK_NAME  LIKE  CONCAT('%', #{query}, '%')  OR PE.USER_NAME LIKE CONCAT('%', #{query}, '%'))
+        <if test="token != null">
+            AND st.TOKEN = #{token}
         </if>
         <if test="orderBy != null">
             ORDER BY #{orderBy}

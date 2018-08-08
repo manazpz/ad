@@ -27,6 +27,9 @@
     <mappers>
         <!--加载其他模块的mybatis配置xml文件-->
         <mapper resource="sys/system.xml"/>
+        <mapper resource="customer/customer.xml"/>
+        <mapper resource="config/config.xml"/>
+        <mapper resource="user/user.xml"/>
     </mappers>
 
 </configuration> 

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="aq.dao.customer.CustomerDao">
+
+    <!--插入客户数据-->
+    <insert id="insertCustomer" >
+        INSERT INTO ZDEV_CUSTOMER_MAIN
+        VALUES(#{id},#{code},#{customerUser},#{customerName},#{type},#{sex}
+        ,#{idCard},#{bank},#{bankNo},#{address},#{createUser},#{lastCreateUser}
+        ,#{createTime,jdbcType=TIMESTAMP},#{lastCreateTime,jdbcType=TIMESTAMP},'Y',#{remarks})
+    </insert>
+
+    <!--查询客户主数据-->
+    <select id="selectCustomerList" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        ZCM.FD_ID AS customerId,
+        ZCM.FD_CODE AS code,
+        ZCM.FD_USER AS customerUser,
+        ZCM.FD_NAME AS customerName,
+        ZCM.FD_SEX AS sex,
+        ZCM.FD_TYPE AS typeKey,
+        SC.NAME AS typeName,
+        ZCM.FD_ID_CARD AS idCard,
+        ZCM.FD_BANK AS bank,
+        ZCM.FD_BANK_NO AS bankNo,
+        ZCM.FD_ADDRESS AS address,
+        ZCM.CREATE_USER AS createUserId,
+        CREATE_USER.NICK_NAME AS createUserName,
+        ZCM.LAST_CREATE_USER AS lastCreateUserId,
+        LAST_CREATE_USER.NICK_NAME AS lastCreateUserName,
+        DATE_FORMAT(ZCM.CREATE_TIME,'%Y-%m-%d %H:%i:%S') AS createTime,
+        DATE_FORMAT(ZCM.LAST_CREATE_TIME,'%Y-%m-%d %H:%i:%S') AS lastCreateTime,
+        ZCM.IS_VALID AS isValid,
+        ZCM.FD_REMARKS AS remarks
+        FROM
+        ZDEV_CUSTOMER_MAIN ZCM
+        LEFT JOIN system_config SC ON SC.KEY_WORD = ZCM.FD_TYPE AND SC.TYPE = 'CUSTOMER'
+        LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZCM.CREATE_USER
+        LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZCM.LAST_CREATE_USER
+        WHERE 1=1
+        <if test="customerId != null">
+            AND ZCM.FD_ID = #{customerId}
+        </if>
+        <if test="customerName != null and customerName != ''">
+            AND ZCM.FD_NAME = #{customerName}
+        </if>
+        <if test="typeKey != null and typeKey != ''">
+            AND ZCM.FD_TYPE = #{typeKey}
+        </if>
+        <if test="code != null and code != ''">
+            AND ZCM.FD_CODE = #{code}
+        </if>
+        <if test="sex != null and sex != ''">
+            AND ZCM.FD_SEX = #{sex}
+        </if>
+        ORDER BY ZCM.IS_VALID ASC
+        <if test="sort != null">
+            ,#{sort}
+        </if>
+    </select>
+
+    <!--更新客户主数据-->
+    <update id="updateCustomer" parameterType="java.util.Map">
+        UPDATE ZDEV_CUSTOMER_MAIN ZCM
+        <trim prefix="set" suffixOverrides=",">
+            <if test="code!=null and code != ''">
+                ZCM.FD_CODE = #{code},
+            </if>
+            <if test="customerUser!=null and customerUser != ''">
+                ZCM.FD_USER = #{customerUser},
+            </if>
+            <if test="customerName!=null and customerName != ''">
+                ZCM.FD_NAME = #{customerName},
+            </if>
+            <if test="type!=null and type != ''">
+                ZCM.FD_TYPE = #{type},
+            </if>
+            <if test="sex!=null and sex != ''">
+                ZCM.FD_SEX = #{sex},
+            </if>
+            <if test="idCard!=null and idCard != ''">
+                ZCM.FD_ID_CARD = #{idCard},
+            </if>
+            <if test="bank!=null and bank != ''">
+                ZCM.FD_BANK = #{code},
+            </if>
+
+            <if test="bankNo!=null and bankNo != ''">
+                ZCM.FD_BANK_NO = #{bankNo},
+            </if>
+            <if test="address!=null and address != ''">
+                ZCM.FD_ADDRESS = #{address},
+            </if>
+            <if test="lastCreateUser!=null and lastCreateUser != ''">
+                ZCM.LAST_CREATE_USER = #{lastCreateUser},
+            </if>
+            <if test="lastCreateTime!=null and lastCreateTime != ''">
+                ZCM.LAST_CREATE_TIME = #{lastCreateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remarks!=null and remarks != ''">
+                ZCM.FD_REMARKS = #{remarks},
+            </if>
+        </trim>
+        WHERE ZCM.FD_ID = #{id}
+    </update>
+
+    <!--删除/恢复客户信息-->
+    <update id="deleteCustomer" parameterType="java.util.Map">
+        UPDATE ZDEV_CUSTOMER_MAIN ZCM
+        <trim prefix="set" suffixOverrides=",">
+            <if test="isValid!=null and isValid != ''">
+                ZCM.IS_VALID = #{isValid},
+            </if>
+        </trim>
+        WHERE ZCM.FD_ID = #{id}
+    </update>
+
+</mapper>

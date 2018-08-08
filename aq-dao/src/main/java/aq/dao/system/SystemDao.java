@@ -84,7 +84,7 @@ public interface SystemDao {
     int updateZdevUserInfo(Map<String,Object> map);
 
     //微信用户-新增
-    int insertUserInfo(Map<String,Object> map);
+    int insertUserInfo1(Map<String,Object> map);
 
     //角色分页查询
     List<Map<String,Object>> selectSysRole(Map<String,Object> map);

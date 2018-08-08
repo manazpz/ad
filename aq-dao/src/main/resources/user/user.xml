@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="aq.dao.user.UserDao">
+
+    <!--新增用户信息-->
+    <insert id="insertUserInfo" >
+        INSERT INTO system_administrator
+        VALUES(#{id},#{nickName},#{headPortrait},#{userName},#{password},#{initPassword},#{phone}
+        ,#{weiXin},#{qq},#{name},#{idCard},#{email},#{status},#{createTime,jdbcType=TIMESTAMP}
+        ,#{updateTime,jdbcType=TIMESTAMP},'Y',#{remark})
+    </insert>
+
+    <!--查询用户信息-->
+    <select id="selectUserInfo" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        sa.ID AS id,
+        sa.NICK_NAME AS nickName,
+        sa.HEAD_PORTRAIT AS headPortrait,
+        sa.USER_NAME AS userName,
+        sa.PHONE AS phone,
+        sa.EMAIL AS email,
+        sa.WEI_XIN AS weiXin,
+        sa.QQ AS qq,
+        sa.NAME AS name,
+        sa.ID_CARD AS idCard,
+        sa. STATUS AS statusKey,
+        sc. NAME AS statusName,
+        DATE_FORMAT(sa.CREATE_TIME,'%Y-%m-%d %H:%i:%S') AS createTime,
+        DATE_FORMAT(sa.UPDATE_TIME,'%Y-%m-%d %H:%i:%S') AS updateTime,
+        sa.IS_VALID AS isValid
+        FROM
+        system_administrator sa
+        LEFT JOIN system_config sc ON sc.KEY_WORD = sa. STATUS
+        LEFT JOIN system_token st on sa.ID = st.ADMINISTRATOR_ID
+        WHERE 1=1
+        <if test="id != null">
+            AND sa.ID = #{id}
+        </if>
+        <if test="userName != null">
+            AND sa.USER_NAME = #{userName}
+        </if>
+        <if test="token != null">
+            AND st.TOKEN = #{token}
+        </if>
+        <if test="orderBy != null">
+            ORDER BY #{orderBy}
+        </if>
+    </select>
+
+    <!--更新令牌-->
+    <update id="updateUserInfo" parameterType="java.util.Map">
+        UPDATE system_administrator sa
+        <trim prefix="set" suffixOverrides=",">
+            <if test="nickName!=null and nickName != ''">
+                sa.NICK_NAME = #{nickName},
+            </if>
+            <if test="headPortrait!=null and headPortrait != ''">
+                sa.HEAD_PORTRAIT = #{headPortrait},
+            </if>
+            <if test="password!=null and password != ''">
+                sa.PASSWORD = #{password},
+            </if>
+            <if test="phone!=null and phone != ''">
+                sa.PHONE = #{phone},
+            </if>
+            <if test="weiXin!=null and weiXin != ''">
+                sa.WEI_XIN = #{weiXin},
+            </if>
+            <if test="qq!=null and qq != ''">
+                sa.QQ = #{qq},
+            </if>
+            <if test="name!=null and name != ''">
+                sa.NAME = #{name},
+            </if>
+            <if test="idCard!=null and idCard != ''">
+                sa.ID_CARD = #{idCard},
+            </if>
+            <if test="email!=null and email != ''">
+                sa.EMAIL = #{email},
+            </if>
+
+            <if test="status!=null and status != ''">
+                sa.STATUS = #{status},
+            </if>
+            <if test="updateTime!=null and updateTime != ''">
+                sa.UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="remark!=null and remark != ''">
+                sa.REMARK = #{remark},
+            </if>
+        </trim>
+        WHERE sa.ID = #{id}
+    </update>
+
+</mapper>

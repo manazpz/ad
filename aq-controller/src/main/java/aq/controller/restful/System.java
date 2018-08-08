@@ -30,7 +30,7 @@ public class System extends Base {
          writerJson(response,out,systemService.queryLogin(requestJson));
     }
 
-    //登录
+    //登出
     @RequestMapping(value = "/loginOut",method = RequestMethod.POST)
     @ResponseBody
     public void loginOut(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
@@ -50,7 +50,9 @@ public class System extends Base {
     //region 用户
     @RequestMapping(value = "/user/info",method = RequestMethod.GET)
     public void userInfo(HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        writerJson(response,out,systemService.queryUserInfo(HttpUtil.getParameterMap(request)));
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        jsonObject.addProperty("token",request.getHeader("X-Token"));
+        writerJson(response,out,systemService.queryUserInfo(jsonObject));
     }
     //endregion
 
