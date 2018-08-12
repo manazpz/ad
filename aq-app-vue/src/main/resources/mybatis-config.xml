@@ -31,6 +31,7 @@
         <mapper resource="config/config.xml"/>
         <mapper resource="user/user.xml"/>
         <mapper resource="goods/goods.xml"/>
+        <mapper resource="contract/contract.xml"/>
     </mappers>
 
 </configuration> 

@@ -1,5 +1,7 @@
 package aq.common.util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.sql.Timestamp;
@@ -146,5 +148,20 @@ public class DateTime {
             return false;
         }
     }
-
+    /**
+     * 比较2个时间
+     * @param date1
+     * @param date2
+     * @return
+     */
+    public static Date compareDate(String date){
+        String dates = date.replace("Z", " UTC");//注意是空格+UTC
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS Z");//注意格式化的表达式
+        try {
+            return format.parse(dates);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

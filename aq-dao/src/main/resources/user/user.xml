@@ -58,6 +58,16 @@
         </if>
     </select>
 
+    <!--查询用户信息-->
+    <select id="selectUserCustomerInfo" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+            sa.ID AS id,
+            sa.NICK_NAME AS name
+        FROM
+            system_administrator sa
+    </select>
+
+
     <!--更新用户信息-->
     <update id="updateUserInfo" parameterType="java.util.Map">
         UPDATE system_administrator sa

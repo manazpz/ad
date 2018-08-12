@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="aq.dao.contract.ContractDao">
+
+    <!--插入合同数据-->
+    <insert id="insertContract" >
+        INSERT INTO ZDEV_CONTRACT_MAIN
+        VALUES(#{id},
+        #{number},
+        #{parent},
+        #{title},
+        #{customerKeyA},
+        #{customerKeyB},
+        #{money_init},
+        #{money},
+        #{paid},
+        #{unpaid},
+        #{expenses},
+        #{tax},
+        #{taxlimit},
+        #{income},
+        #{currency},
+        #{status},
+        #{signTime,jdbcType=TIMESTAMP},
+        #{expireTime,jdbcType=TIMESTAMP},
+        #{remarks1},
+        #{remarks2},
+        #{createUser},
+        #{lastCreateUser},
+        #{createTime,jdbcType=TIMESTAMP},
+        #{lastCreateTime,jdbcType=TIMESTAMP})
+    </insert>
+
+
+    <!--查询客户主数据-->
+    <select id="selectContracList" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+            ZG.FD_ID AS id,
+            ZG.FD_NUMBER AS number,
+            ZG.FD_PARENT AS parent,
+            ZG.FD_TITLE AS title,
+            ZG.FD_CUSTOMER_A AS customerKeyA,
+            CUSTOMER_A.NICK_NAME AS customer_a_Name,
+            ZG.FD_CUSTOMER_B AS customerKeyB,
+            CUSTOMER_B.NICK_NAME AS customer_b_Name,
+            ZG.FD_STATUS AS statusKey,
+            SC. NAME AS statusName,
+            ZG.FD_MONEY_INIT AS money_init,
+            ZG.FD_MONEY AS money,
+            ZG.FD_PAID AS paid,
+            ZG.FD_UNPAID AS unpaid,
+            ZG.FD_EXPENSES	AS expenses,
+            ZG.FD_TAX AS tax,
+            ZG.FD_TAX_LIMIT	AS taxlimit,
+            ZG.FD_INCOME	AS income,
+            ZG.FD_CURRENCY AS currency,
+            DATE_FORMAT(
+            ZG.FD_SIGN_TIME,
+            '%Y-%m-%d'
+            ) AS signTime,
+            DATE_FORMAT(
+            ZG.FD_EXPIRE_TIME,
+            '%Y-%m-%d'
+            ) AS expireTime,
+            ZG.CREATE_USER AS createUserId,
+            CREATE_USER.NICK_NAME AS createUserName,
+            ZG.LAST_CREATE_USER AS lastCreateUserId,
+            LAST_CREATE_USER.NICK_NAME AS lastCreateUserName,
+            DATE_FORMAT(
+            ZG.CREATE_TIME,
+            '%Y-%m-%d %H:%i:%S'
+            ) AS createTime,
+            DATE_FORMAT(
+            ZG.LAST_CREATE_TIME,
+            '%Y-%m-%d %H:%i:%S'
+            ) AS lastCreateTime,
+            ZG.FD_STATUS AS STATUS,
+            ZG.FD_REMARK1 AS reamrks1,
+            ZG.FD_DELETE  AS del
+        FROM
+            ZDEV_CONTRACT_MAIN ZG
+        LEFT JOIN system_config SC ON SC.KEY_WORD = ZG.FD_STATUS
+        AND SC.TYPE = 'CONTRACT'
+        LEFT JOIN system_administrator CUSTOMER_A ON CUSTOMER_A.ID = ZG.FD_CUSTOMER_A
+        LEFT JOIN system_administrator CUSTOMER_B ON CUSTOMER_B.ID = ZG.FD_CUSTOMER_B
+        LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZG.CREATE_USER
+        LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZG.LAST_CREATE_USER
+        WHERE 1=1
+        <if test="id != null">
+            AND ZG.FD_ID = #{id}
+        </if>
+        <if test="number != null and number != ''">
+            AND ZG.FD_NUMBER = #{number}
+        </if>
+        <if test="statusKey != null and statusKey != ''">
+            AND ZG.FD_STATUS = #{statusKey}
+        </if>
+        ORDER BY ZG.FD_STATUS ASC
+        <if test="sort != null">
+            ,#{sort}
+        </if>
+    </select>
+
+    <!--更新客户主数据-->
+    <update id="updateContract" parameterType="java.util.Map">
+        UPDATE ZDEV_CONTRACT_MAIN ZG
+        <trim prefix="set" suffixOverrides=",">
+            <if test="title!=null and title != ''">
+                ZG.FD_TITLE = #{title},
+            </if>
+            <if test="customerKeyA!=null and customerKeyA != ''">
+                ZG.FD_CUSTOMER_A = #{customerKeyA},
+            </if>
+            <if test="customerKeyB!=null and customerKeyB != ''">
+                ZG.FD_CUSTOMER_B = #{customerKeyB},
+            </if>
+            <if test="money!=null and money != ''">
+                ZG.FD_MONEY = #{money},
+            </if>
+            <if test="money_init!=null and money_init != ''">
+                ZG.FD_MONEY_INIT = #{money_init},
+            </if>
+            <if test="paid!=null and paid != ''">
+                ZG.FD_PAID = #{paid},
+            </if>
+            <if test="unpaid!=null and unpaid != ''">
+                ZG.FD_UNPAID = #{unpaid},
+            </if>
+            <if test="expenses!=null and expenses != ''">
+                ZG.FD_EXPENSES = #{expenses},
+            </if>
+            <if test="tax!=null and tax != ''">
+                ZG.FD_TAX = #{tax},
+            </if>
+            <if test="taxlimit!=null and taxlimit != ''">
+                ZG.FD_TAX_LIMIT = #{taxlimit},
+            </if>
+            <if test="income!=null and income != ''">
+                ZG.FD_INCOME = #{income},
+            </if>
+            <if test="currency!=null and currency != ''">
+                ZG.FD_CURRENCY = #{currency},
+            </if>
+            <if test="status!=null and status != ''">
+                ZG.FD_STATUS = #{status},
+            </if>
+            <if test="signTime!=null and signTime != ''">
+                ZG.FD_SIGN_TIME = #{signTime},
+            </if>
+            <if test="expireTime!=null and expireTime != ''">
+                ZG.FD_EXPIRE_TIME = #{expireTime},
+            </if>
+            <if test="remarks1!=null and remarks1 != ''">
+                ZG.FD_REMARK1 = #{remarks1},
+            </if>
+
+            <if test="lastCreateUser!=null and lastCreateUser != ''">
+                ZG.LAST_CREATE_USER = #{lastCreateUser},
+            </if>
+            <if test="lastCreateTime!=null and lastCreateTime != ''">
+                ZG.LAST_CREATE_TIME = #{lastCreateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+        WHERE ZG.FD_ID = #{id}
+    </update>
+
+    <!--删除/恢复客户信息-->
+    <update id="deleteContract" parameterType="java.util.Map">
+        UPDATE ZDEV_CONTRACT_MAIN ZG
+        <trim prefix="set" suffixOverrides=",">
+            <if test="isValid!=null and isValid != ''">
+                ZG.FD_DELETE = #{isValid},
+            </if>
+        </trim>
+        WHERE ZG.FD_ID = #{id}
+    </update>
+
+
+</mapper>

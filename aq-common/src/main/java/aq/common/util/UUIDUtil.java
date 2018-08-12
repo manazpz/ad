@@ -2,6 +2,7 @@ package aq.common.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 public class UUIDUtil {
@@ -28,5 +29,20 @@ public class UUIDUtil {
     public static String getRandomReqNo() {
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");//设置日期格式
         return df.format(new Date()).toString();// new Date()为获取当前系统时间，也可使用当前时间戳
+    }
+    /**
+     * 获取随机的流水号(8位)
+     * @return
+     */
+    public static String getRandomReqNumber() {
+        int length=8;
+        String base = "abcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; i++) {
+            int number = random.nextInt(base.length());
+            sb.append(base.charAt(number));
+        }
+        return sb.toString();
     }
 }

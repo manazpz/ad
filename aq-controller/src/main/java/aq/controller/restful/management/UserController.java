@@ -35,6 +35,16 @@ public class UserController extends aq.controller.restful.System {
         writerJson(response,out,userService.queryUserInfo(jsonObject));
     }
 
+    //用户列表
+    @ResponseBody
+    @RequestMapping(value = "customerlist", method=RequestMethod.GET)
+    public void  customerlist(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        jsonObject.addProperty("token",request.getHeader("X-Token"));
+        writerJson(response,out,userService.queryUserCustomerInfo(jsonObject));
+    }
+
+
     //更新用户
     @RequestMapping(value = "/update",method = RequestMethod.POST)
     @ResponseBody

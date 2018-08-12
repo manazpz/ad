@@ -11,11 +11,13 @@ import aq.dao.user.UserDao;
 import aq.service.base.Impl.BaseServiceImpl;
 import aq.service.system.Func;
 import aq.service.system.UserService;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -70,6 +72,22 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
             map.put("token",null);
             return userDao.selectUserInfo(map);
         });
+    }
+
+    @Override
+    public JsonObject queryUserCustomerInfo(JsonObject jsonObject) {
+        Rtn rtn = new Rtn("Config");
+        JsonObject data = new JsonObject();
+        JsonArray jsonArray = new JsonArray();
+        Map<String,Object> map = new HashMap<>();
+        map = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        List<Map<String, Object>> results = userDao.selectUserCustomerInfo(map);
+        jsonArray =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(results)).getAsJsonArray();
+        rtn.setCode(200);
+        rtn.setMessage("success");
+        data.add("items",jsonArray);
+        rtn.setData(data);
+        return Func.functionRtnToJsonObject.apply(rtn);
     }
 
     @Override

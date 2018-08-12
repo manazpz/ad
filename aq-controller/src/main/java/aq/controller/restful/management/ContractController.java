@@ -1,6 +1,7 @@
 package aq.controller.restful.management;
 
 import aq.common.util.HttpUtil;
+import aq.service.contract.ContractService;
 import aq.service.customer.CustomerService;
 import aq.service.goods.GoodsService;
 import aq.service.system.SystemService;
@@ -15,43 +16,42 @@ import java.io.PrintWriter;
 
 
 @Controller
-@RequestMapping("/goods")
-public class GoodsController extends aq.controller.restful.System {
+@RequestMapping("/contract")
+public class ContractController extends aq.controller.restful.System {
     @Resource
-    protected GoodsService goodsService;
+    protected ContractService contractService;
 
-    //商品列表
+    //合同列表
     @ResponseBody
     @RequestMapping(value = "list", method=RequestMethod.GET)
-    public void  goodsList(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
+    public void  contractList(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
         JsonObject jsonObject = HttpUtil.getParameterMap(request);
         jsonObject.addProperty("token",request.getHeader("X-Token"));
-        writerJson(response,out,goodsService.queryGoodsList(jsonObject));
+        writerJson(response,out,contractService.queryContractList(jsonObject));
     }
 
-
-    //新增商品
+    //新增合同
     @RequestMapping(value = "/insert",method = RequestMethod.POST)
     @ResponseBody
-    public void createGoods(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+    public void createContract(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
         requestJson.addProperty("token",request.getHeader("X-Token"));
-        writerJson(response,out,goodsService.insertGoods(requestJson));
+        writerJson(response,out,contractService.insertContract(requestJson));
     }
 
-    //更新客户
+    //更新合同
     @RequestMapping(value = "/update",method = RequestMethod.POST)
     @ResponseBody
-    public void updateGoods(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+    public void updateContract(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
         requestJson.addProperty("token",request.getHeader("X-Token"));
-        writerJson(response,out,goodsService.updateGoods(requestJson));
+        writerJson(response,out,contractService.updateContract(requestJson));
     }
 
-    //删除/恢复客户
+    //删除/恢复合同
     @RequestMapping(value = "/delete",method = RequestMethod.POST)
     @ResponseBody
-    public void deleteGoods(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+    public void deleteContract(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
         requestJson.addProperty("token",request.getHeader("X-Token"));
-        writerJson(response,out,goodsService.deleteGoods(requestJson));
+        writerJson(response,out,contractService.deleteContract(requestJson));
     }
 
 }
