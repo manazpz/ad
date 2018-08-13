@@ -23,4 +23,10 @@ public interface UserService extends BaseService {
     //权限列表
     JsonObject selectPermissionList(JsonObject jsonObject);
 
+    //更新权限
+    JsonObject updatePermission(JsonObject jsonObject);
+
+    //新增权限
+    JsonObject insertPermission(JsonObject jsonObject);
+
 }

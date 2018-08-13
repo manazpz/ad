@@ -55,10 +55,27 @@ public class UserController extends aq.controller.restful.System {
 
     //查询权限
     @RequestMapping(value = "/permissions",method = RequestMethod.GET)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC1-9508-D07B9DD880CA"},name = {"权限-查询"})
     @ResponseBody
     public void permissionList(HttpServletRequest request, HttpServletResponse response, PrintWriter out){
         JsonObject jsonObject = HttpUtil.getParameterMap(request);
         writerJson(response,out,userService.selectPermissionList(jsonObject));
+    }
+
+    //添加权限
+    @RequestMapping(value = "/permission/insert",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B9DD880CB"},name = {"权限-新增"})
+    @ResponseBody
+    public void insertPermission(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,userService.insertPermission(requestJson));
+    }
+
+    //更新权限
+    @RequestMapping(value = "/permission/update",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B9DD880CC"},name = {"权限-更新"})
+    @ResponseBody
+    public void updatePermission(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,userService.updatePermission(requestJson));
     }
 
 }

@@ -14,7 +14,7 @@ public interface CustomerDao {
     //插入客户数据
     int insertCustomer(Map<String,Object> map);
 
-    //获取客户信息
+    //更新客户信息
     int updateCustomer(Map<String,Object> map);
 
     //删除/恢复客户信息

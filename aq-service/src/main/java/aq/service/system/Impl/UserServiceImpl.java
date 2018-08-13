@@ -86,4 +86,29 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
             return userDao.selectPermissionList(map);
         });
     }
+
+    @Override
+    public JsonObject updatePermission(JsonObject jsonObject) {
+        Rtn rtn = new Rtn("User");
+        Map<String,Object> res = new HashMap<>();
+        res.clear();
+        res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        userDao.updatePermission(res);
+        rtn.setCode(200);
+        rtn.setMessage("success");
+        return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+    @Override
+    public JsonObject insertPermission(JsonObject jsonObject) {
+        Rtn rtn = new Rtn("User");
+        Map<String,Object> res = new HashMap<>();
+        res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        res.put("id", UUIDUtil.getUUID());
+        res.put("createTime",new Date());
+        userDao.insertPermission(res);
+        rtn.setCode(200);
+        rtn.setMessage("success");
+        return Func.functionRtnToJsonObject.apply(rtn);
+    }
 }

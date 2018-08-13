@@ -119,6 +119,7 @@
           sp.MODULE AS moduleKey,
           sc.NAME AS moduleName,
           sp.NAME AS name,
+          sp.DESCRIBE AS depict,
           sp.IS_ENABLE AS isEnable,
           DATE_FORMAT(sp.CREATE_TIME,'%Y-%m-%d %H:%i:%S') AS createTime
         FROM
@@ -131,8 +132,8 @@
         <if test="moduleKey != null and moduleKey != ''">
             AND sp.MODULE = #{moduleKey}
         </if>
-        <if test="name != null and name != ''">
-            AND sp.MODULE LIKE CONCAT('%', #{name}, '%')
+        <if test="depict != null and depict != ''">
+            AND sp.DESCRIBE LIKE CONCAT('%', #{depict}, '%')
         </if>
         ORDER BY sp.IS_ENABLE ASC, sp.MODULE ASC
         <if test="sort != null">
@@ -140,4 +141,27 @@
         </if>
     </select>
 
+    <!--插入权限-->
+    <insert id="insertPermission" >
+        INSERT INTO system_permission
+        VALUES(#{id},#{type},#{module},#{name},#{depict},#{extend}
+        ,#{isEnable},#{createTime,jdbcType=TIMESTAMP})
+    </insert>
+
+    <!--更新权限-->
+    <update id="updatePermission" parameterType="java.util.Map">
+        UPDATE system_permission sp
+        <trim prefix="set" suffixOverrides=",">
+            <if test="depict!=null and depict != ''">
+                sp.DESCRIBE = #{depict},
+            </if>
+            <if test="isEnable!=null and isEnable != ''">
+                sp.IS_ENABLE = #{isEnable},
+            </if>
+            <if test="extend!=null and extend != ''">
+                sp.EXTEND = #{extend},
+            </if>
+        </trim>
+        WHERE sp.ID = #{id}
+    </update>
 </mapper>

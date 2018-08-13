@@ -101,6 +101,7 @@
             sp.TYPE AS type,
             sp.MODULE AS module,
             sp.NAME as name,
+            sp.DESCRIBE as depict,
             sp.EXTEND AS extend,
             sp.IS_ENABLE AS isEnable
         FROM

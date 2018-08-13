@@ -22,4 +22,11 @@ public interface UserDao {
 
     //权限查询
     List<Map<String,Object>> selectPermissionList(Map<String,Object> map);
+
+    //插入权限
+    int insertPermission(Map<String,Object> map);
+
+    //更新权限
+    int updatePermission(Map<String,Object> map);
+
 }
