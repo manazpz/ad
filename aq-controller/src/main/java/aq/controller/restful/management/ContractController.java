@@ -26,7 +26,6 @@ public class ContractController extends aq.controller.restful.System {
     @RequestMapping(value = "list", method=RequestMethod.GET)
     public void  contractList(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
         JsonObject jsonObject = HttpUtil.getParameterMap(request);
-        jsonObject.addProperty("token",request.getHeader("X-Token"));
         writerJson(response,out,contractService.queryContractList(jsonObject));
     }
 
@@ -34,7 +33,6 @@ public class ContractController extends aq.controller.restful.System {
     @RequestMapping(value = "/insert",method = RequestMethod.POST)
     @ResponseBody
     public void createContract(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        requestJson.addProperty("token",request.getHeader("X-Token"));
         writerJson(response,out,contractService.insertContract(requestJson));
     }
 
@@ -42,7 +40,6 @@ public class ContractController extends aq.controller.restful.System {
     @RequestMapping(value = "/update",method = RequestMethod.POST)
     @ResponseBody
     public void updateContract(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        requestJson.addProperty("token",request.getHeader("X-Token"));
         writerJson(response,out,contractService.updateContract(requestJson));
     }
 
@@ -50,7 +47,6 @@ public class ContractController extends aq.controller.restful.System {
     @RequestMapping(value = "/delete",method = RequestMethod.POST)
     @ResponseBody
     public void deleteContract(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        requestJson.addProperty("token",request.getHeader("X-Token"));
         writerJson(response,out,contractService.deleteContract(requestJson));
     }
 

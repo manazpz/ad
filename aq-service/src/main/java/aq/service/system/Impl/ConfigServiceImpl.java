@@ -4,7 +4,6 @@ import aq.common.annotation.DyncDataSource;
 import aq.common.other.Rtn;
 import aq.common.util.GsonHelper;
 import aq.dao.config.ConfigDao;
-import aq.dao.system.SystemDao;
 import aq.service.base.Impl.BaseServiceImpl;
 import aq.service.system.ConfigService;
 import aq.service.system.Func;

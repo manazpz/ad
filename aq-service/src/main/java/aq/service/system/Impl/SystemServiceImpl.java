@@ -131,9 +131,8 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         }else {
             rtn.setCode(200);
             rtn.setMessage("success");
-
+            data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(users.get(0))).getAsJsonObject();
         }
-        data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(users.get(0))).getAsJsonObject();
         rtn.setData(data);
         return Func.functionRtnToJsonObject.apply(rtn);
     }
@@ -156,9 +155,9 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
             }else {
                 rtn.setCode(200);
                 rtn.setMessage("success");
+                data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(tokens.get(0))).getAsJsonObject();
             }
         }
-        data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(tokens.get(0))).getAsJsonObject();
         rtn.setData(data);
         return Func.functionRtnToJsonObject.apply(rtn);
     }
@@ -195,8 +194,8 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         }else {
             rtn.setCode(200);
             rtn.setMessage("success");
+            data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(permissions.get(0))).getAsJsonObject();
         }
-        data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(permissions.get(0))).getAsJsonObject();
         rtn.setData(data);
         return Func.functionRtnToJsonObject.apply(rtn);
     }

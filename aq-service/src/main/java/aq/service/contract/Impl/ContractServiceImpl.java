@@ -1,17 +1,13 @@
 package aq.service.contract.Impl;
 
+import aq.common.access.AbsAccessUser;
+import aq.common.access.Factory;
 import aq.common.annotation.DyncDataSource;
 import aq.common.other.Rtn;
 import aq.common.util.*;
 import aq.dao.contract.ContractDao;
-import aq.dao.customer.CustomerDao;
-import aq.dao.goods.GoodsDao;
-import aq.dao.system.SystemDao;
-import aq.dao.user.UserDao;
 import aq.service.base.Impl.BaseServiceImpl;
 import aq.service.contract.ContractService;
-import aq.service.customer.CustomerService;
-import aq.service.goods.GoodsService;
 import aq.service.system.Func;
 import com.google.gson.*;
 import org.springframework.stereotype.Service;
@@ -19,7 +15,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,21 +25,11 @@ import java.util.Map;
 public class ContractServiceImpl extends BaseServiceImpl  implements ContractService {
 
     @Resource
-    private SystemDao sysDao;
-    @Resource
     private ContractDao contractDao;
-    @Resource
-    private UserDao userDao;
 
     @Override
     public JsonObject queryContractList(JsonObject jsonObject) {
         jsonObject.addProperty("service","Contract");
-        JsonObject user = verifyToken(jsonObject,(map)->{
-            return sysDao.selectSysToken(map);
-        },null);
-        if(!StringUtil.isEmpty(user.get("code"))){
-            return user;
-        }
         return query(jsonObject,(map)->{
             return contractDao.selectContracList(map);
         });
@@ -52,16 +37,13 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
 
     @Override
     public JsonObject insertContract(JsonObject jsonObject) {
+        AbsAccessUser user = Factory.getContext().user();
         Rtn rtn = new Rtn("Contract");
-        jsonObject.addProperty("service","Contract");
         Map<String,Object> res = new HashMap<>();
-        JsonObject user = verifyToken(jsonObject,(map)->{
-            return sysDao.selectSysToken(map);
-        },(map)->{
-            return sysDao.selectUserInfo(map);
-        });
-        if(!StringUtil.isEmpty(user.get("code"))){
-            return user;
+        if (user == null) {
+            rtn.setCode(10000);
+            rtn.setMessage("未登录！");
+            return Func.functionRtnToJsonObject.apply(rtn);
         }
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
@@ -83,8 +65,8 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("currency", res.get("currency"));
         res.put("reamrks1", res.get("reamrks1"));
         res.put("status", "BG");
-        res.put("createUser",user.get("id").getAsString());
-        res.put("lastCreateUser",user.get("id").getAsString());
+        res.put("createUser",user.getUserId());
+        res.put("lastCreateUser",user.getUserId());
         res.put("createTime",new Date());
         res.put("lastCreateTime",new Date());
         contractDao.insertContract(res);
@@ -95,21 +77,18 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
 
     @Override
     public JsonObject updateContract(JsonObject jsonObject) {
+        AbsAccessUser user = Factory.getContext().user();
         Rtn rtn = new Rtn("Contract");
-        jsonObject.addProperty("service","Contract");
         Map<String,Object> res = new HashMap<>();
-        JsonObject user = verifyToken(jsonObject,(map)->{
-            return sysDao.selectSysToken(map);
-        },(map)->{
-            return sysDao.selectUserInfo(map);
-        });
-        if(!StringUtil.isEmpty(user.get("code"))){
-            return user;
+        if (user == null) {
+            rtn.setCode(10000);
+            rtn.setMessage("未登录！");
+            return Func.functionRtnToJsonObject.apply(rtn);
         }
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         res.put("id",res.get("id"));
-        res.put("lastCreateUser",user.get("id").getAsString());
+        res.put("lastCreateUser",user.getUserId());
         res.put("lastCreateTime",new Date());
         res.put("title",res.get("title"));
         res.put("customerKeyA",res.get("customerKeyA"));
@@ -136,16 +115,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     @Override
     public JsonObject deleteContract(JsonObject jsonObject) {
         Rtn rtn = new Rtn("Contract");
-        jsonObject.addProperty("service","Contract");
         Map<String,Object> res = new HashMap<>();
-        JsonObject user = verifyToken(jsonObject,(map)->{
-            return sysDao.selectSysToken(map);
-        },(map)->{
-            return sysDao.selectUserInfo(map);
-        });
-        if(!StringUtil.isEmpty(user.get("code"))){
-            return user;
-        }
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         contractDao.deleteContract(res);

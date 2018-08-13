@@ -49,24 +49,11 @@
         <if test="status != null and status != ''">
             AND sa.STATUS = #{status}
         </if>
-        <if test="token != null">
-            AND st.TOKEN = #{token}
-        </if>
         ORDER BY sa.IS_VALID ASC
         <if test="sort != null">
             ,#{sort}
         </if>
     </select>
-
-    <!--查询用户信息-->
-    <select id="selectUserCustomerInfo" resultType="java.util.Map" parameterType="java.util.Map">
-        SELECT
-            sa.ID AS id,
-            sa.NICK_NAME AS name
-        FROM
-            system_administrator sa
-    </select>
-
 
     <!--更新用户信息-->
     <update id="updateUserInfo" parameterType="java.util.Map">
@@ -113,7 +100,7 @@
         WHERE sa.ID = #{id}
     </update>
 
-    <!--删除/恢复客户信息-->
+    <!--删除/恢复用户信息-->
     <update id="deleteUser" parameterType="java.util.Map">
         UPDATE system_administrator sa
         <trim prefix="set" suffixOverrides=",">
@@ -123,5 +110,34 @@
         </trim>
         WHERE sa.ID = #{id}
     </update>
+
+    <!--查询用户拥有的权限-->
+    <select id="selectPermissionList" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+          sp.ID AS id,
+          sp.TYPE AS type,
+          sp.MODULE AS moduleKey,
+          sc.NAME AS moduleName,
+          sp.NAME AS name,
+          sp.IS_ENABLE AS isEnable,
+          DATE_FORMAT(sp.CREATE_TIME,'%Y-%m-%d %H:%i:%S') AS createTime
+        FROM
+        system_permission sp
+        INNER JOIN system_config sc on sp.MODULE = sc.KEY_WORD
+        WHERE 1=1
+        <if test="id != null">
+            AND sp.ID = #{id}
+        </if>
+        <if test="moduleKey != null and moduleKey != ''">
+            AND sp.MODULE = #{moduleKey}
+        </if>
+        <if test="name != null and name != ''">
+            AND sp.MODULE LIKE CONCAT('%', #{name}, '%')
+        </if>
+        ORDER BY sp.IS_ENABLE ASC, sp.MODULE ASC
+        <if test="sort != null">
+            ,#{sort}
+        </if>
+    </select>
 
 </mapper>

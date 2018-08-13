@@ -15,11 +15,11 @@ public interface UserDao {
     List<Map<String,Object>> selectUserInfo(Map<String,Object> map);
 
     //获取用户信息
-    List<Map<String,Object>> selectUserCustomerInfo(Map<String,Object> map);
-
-    //获取用户信息
     int updateUserInfo(Map<String,Object> map);
 
     //删除/恢复用户
     int deleteUser(Map<String,Object> map);
+
+    //权限查询
+    List<Map<String,Object>> selectPermissionList(Map<String,Object> map);
 }

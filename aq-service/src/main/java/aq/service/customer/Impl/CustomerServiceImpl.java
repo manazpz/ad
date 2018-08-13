@@ -6,10 +6,8 @@ import aq.common.annotation.DyncDataSource;
 import aq.common.other.Rtn;
 import aq.common.util.GsonHelper;
 import aq.common.util.MD5;
-import aq.common.util.StringUtil;
 import aq.common.util.UUIDUtil;
 import aq.dao.customer.CustomerDao;
-import aq.dao.system.SystemDao;
 import aq.dao.user.UserDao;
 import aq.service.base.Impl.BaseServiceImpl;
 import aq.service.customer.CustomerService;
@@ -30,8 +28,6 @@ import java.util.Map;
 @DyncDataSource
 public class CustomerServiceImpl extends BaseServiceImpl  implements CustomerService {
 
-    @Resource
-    private SystemDao sysDao;
     @Resource
     private CustomerDao customerDao;
     @Resource

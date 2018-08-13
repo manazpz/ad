@@ -46,13 +46,13 @@
             AND ZCM.FD_USER = #{customerUser}
         </if>
         <if test="customerName != null and customerName != ''">
-            AND ZCM.FD_NAME = #{customerName}
+            AND ZCM.FD_NAME LIKE CONCAT('%', #{customerName}, '%')
         </if>
         <if test="typeKey != null and typeKey != ''">
             AND ZCM.FD_TYPE = #{typeKey}
         </if>
         <if test="code != null and code != ''">
-            AND ZCM.FD_CODE = #{code}
+            AND ZCM.FD_CODE LIKE CONCAT('%', #{code}, '%')
         </if>
         <if test="sex != null and sex != ''">
             AND ZCM.FD_SEX = #{sex}

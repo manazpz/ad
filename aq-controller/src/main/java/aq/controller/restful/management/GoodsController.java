@@ -25,7 +25,6 @@ public class GoodsController extends aq.controller.restful.System {
     @RequestMapping(value = "list", method=RequestMethod.GET)
     public void  goodsList(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
         JsonObject jsonObject = HttpUtil.getParameterMap(request);
-        jsonObject.addProperty("token",request.getHeader("X-Token"));
         writerJson(response,out,goodsService.queryGoodsList(jsonObject));
     }
 
@@ -34,7 +33,6 @@ public class GoodsController extends aq.controller.restful.System {
     @RequestMapping(value = "/insert",method = RequestMethod.POST)
     @ResponseBody
     public void createGoods(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        requestJson.addProperty("token",request.getHeader("X-Token"));
         writerJson(response,out,goodsService.insertGoods(requestJson));
     }
 
@@ -42,7 +40,6 @@ public class GoodsController extends aq.controller.restful.System {
     @RequestMapping(value = "/update",method = RequestMethod.POST)
     @ResponseBody
     public void updateGoods(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        requestJson.addProperty("token",request.getHeader("X-Token"));
         writerJson(response,out,goodsService.updateGoods(requestJson));
     }
 
@@ -50,7 +47,6 @@ public class GoodsController extends aq.controller.restful.System {
     @RequestMapping(value = "/delete",method = RequestMethod.POST)
     @ResponseBody
     public void deleteGoods(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        requestJson.addProperty("token",request.getHeader("X-Token"));
         writerJson(response,out,goodsService.deleteGoods(requestJson));
     }
 

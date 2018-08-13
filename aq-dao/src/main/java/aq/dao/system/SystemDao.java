@@ -55,6 +55,14 @@ public interface SystemDao {
 
 
 
+
+
+
+
+
+
+
+
     //权限-新增
     int insertSysPermission(Map<String,Object> map);
 
