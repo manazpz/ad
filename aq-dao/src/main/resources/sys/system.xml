@@ -67,26 +67,81 @@
             sa.EMAIL AS email,
             sa.WEI_XIN AS weiXin,
             sa.QQ AS qq,
-            sa. STATUS AS statusKey,
-            sc. NAME AS statusName,
+            sa.STATUS AS statusKey,
+            sc.NAME AS statusName,
             DATE_FORMAT(sa.CREATE_TIME,'%Y-%m-%d %H:%i:%S') AS createTime,
             DATE_FORMAT(sa.UPDATE_TIME,'%Y-%m-%d %H:%i:%S') AS updateTime,
             sa.IS_VALID AS isValid
         FROM
             system_administrator sa
+        INNER JOIN system_token st on sa.ID = st.ADMINISTRATOR_ID
         LEFT JOIN system_config sc ON sc.KEY_WORD = sa. STATUS
-        LEFT JOIN system_token st on sa.ID = st.ADMINISTRATOR_ID
-        WHERE sa.IS_VALID = 'Y'
-        <if test="id != null">
-            AND sa.ID = #{id}
-        </if>
-        <if test="token != null">
-            AND st.TOKEN = #{token}
-        </if>
-        <if test="orderBy != null">
-            ORDER BY #{orderBy}
-        </if>
+        WHERE sa.IS_VALID = 'Y' AND st.TOKEN = #{token}
     </select>
+
+    <!--查询用户拥有的权限-->
+    <select id="selectSysPermissionUser" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+          sp.ID AS id,
+          sp.TYPE AS type,
+          sp.MODULE AS module,
+          sp.NAME as name,
+          sp.EXTEND AS extend,
+          sp.IS_ENABLE AS isEnable
+        FROM
+        system_permission sp
+        INNER JOIN administrator_permission ap ON sp.ID = ap.PERMISSION_ID
+        WHERE ap.ADMINISTRATOR_ID = #{administratorId} AND sp.IS_ENABLE = 'Y'
+    </select>
+
+    <!--获取权限信息-->
+    <select id="selectSysPermissionInfo" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+            sp.ID AS id,
+            sp.TYPE AS type,
+            sp.MODULE AS module,
+            sp.NAME as name,
+            sp.EXTEND AS extend,
+            sp.IS_ENABLE AS isEnable
+        FROM
+        system_permission sp
+        WHERE sp.ID = #{id} AND sp.IS_ENABLE = 'Y'
+    </select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!--新增权限信息-->
+    <insert id="insertSysPermission" >
+        INSERT INTO system_permission
+        VALUES(#{id},#{type},#{module},#{name},#{extend},#{isEnable},#{createTime,jdbcType=TIMESTAMP})
+    </insert>
 
 
 
@@ -377,20 +432,6 @@
         VALUES(#{FDID},#{FDROLEID},#{FDPERMISSION},#{FDCREATOR},to_date(#{FDCREATETIME}, 'yyyy-mm-dd hh24:mi:ss'))
     </insert>
 
-    <!--查询权限信息-->
-    <select id="selectSysPermission" resultType="java.util.Map" parameterType="java.util.Map">
-        SELECT P.FD_ID AS fdId,P.FD_TYPE AS fdType,P.FD_MODULE AS fdModule,P.FD_NAME AS fdName,P.FD_DESC AS fdDesc,P.FD_ISENABLE AS fdIsEnable,P.FD_EXTEND1 AS fdExtend1,P.FD_EXTEND2 AS fdExtend2,P.FD_GROP AS FDGROP FROM SYS_PERMISSION P WHERE 1 = 1
-        <if test="fdModule != null">
-            AND  P.FD_MODULE = #{fdModule}
-        </if>
-        <if test="fdType != null">
-            AND P.FD_TYPE = #{fdType}
-        </if>
-        <if test="query != null">
-            AND  (P.FD_NAME LIKE '%'||#{query}||'%' OR P.FD_DESC LIKE '%'||#{query}||'%')
-        </if>
-        ORDER BY P.FD_MODULE
-    </select>
 
     <!--更新权限信息-->
     <update id="updateSysPermission" parameterType="java.util.Map">
@@ -424,11 +465,7 @@
         WHERE FD_ID = #{FDID}
     </update>
 
-    <!--新增权限信息-->
-    <insert id="insertSysPermission" >
-        INSERT INTO SYS_PERMISSION
-        VALUES(#{FDID},#{FDTYPE},#{FDMODULE},#{FDNAME},#{FDDESC},#{FDISENABLE},to_date(#{FDCREATETIME}, 'yyyy-mm-dd hh24:mi:ss'),#{FDEXTEND1},#{FDEXTEND2},#{FDGROP})
-    </insert>
+
 
     <!--用户添加权限-->
     <insert id="insertSysPermissionUser" >
@@ -436,41 +473,7 @@
         VALUES(#{FDID},#{FDUSERID},#{FDPERMISSION},#{FDCREATOR},to_date(#{FDCREATETIME}, 'yyyy-mm-dd hh24:mi:ss'))
     </insert>
 
-    <!--查询用户拥有的权限-->
-    <select id="selectSysPermissionUser" resultType="java.util.Map" parameterType="java.util.Map">
-        SELECT DISTINCT * FROM (
-        SELECT
-        ZSP.*
-        FROM
-        SYS_PERMISSION ZSP
-        LEFT JOIN SYS_USERPERMISSION ZSUP ON ZSP.FD_ID = ZSUP.FD_PERMISSION
-        WHERE
-        1 = 1
-        <if test="FDUSERID != null">
-            AND ZSUP.FD_USERID = #{FDUSERID}
-        </if>
-        <if test="FDPERMISSION != null">
-            AND ZSP.FD_ID = #{FDPERMISSION}
-        </if>
-        UNION ALL
-        SELECT
-        ZSP.*
-        FROM
-        SYS_PERMISSION ZSP
-        LEFT JOIN SYS_ROLEPERMISSION ZSRP ON ZSRP.FD_PERMISSION = ZSP.FD_ID
-        LEFT JOIN SYS_ROLEUSER ZSR ON ZSR.FD_ROLEID = ZSRP.FD_ROLEID
-        WHERE
-        1 = 1
-        <if test="FDUSERID != null">
-            AND ZSR.FD_USERID = #{FDUSERID}
-        </if>
-        <if test="FDPERMISSION != null">
-            AND ZSP.FD_ID = #{FDPERMISSION}
-        </if>
-        ) PM
-        ORDER BY PM.FD_MODULE,PM.FD_TYPE
 
-    </select>
 
     <!--删除用户拥有的权限-->
     <delete id="deleteSysPermissionRole"  parameterType="java.util.Map">

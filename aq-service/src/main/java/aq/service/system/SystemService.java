@@ -4,6 +4,7 @@ import aq.service.base.BaseService;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 /**
@@ -19,6 +20,16 @@ public interface SystemService extends BaseService {
 
     //查询用户信息
     JsonObject queryUserInfo(JsonObject jsonObject);
+
+    //获取token
+    JsonObject queryToken(JsonObject jsonObject);
+
+    //查询用户权限
+    JsonObject querySysPermissionUser(JsonObject jsonObject);
+
+    //查询用户信息
+    JsonObject querySysPermissionInfo(JsonObject jsonObject);
+
 
 
 

@@ -28,6 +28,9 @@ public class RequestFilter extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         boolean boolResult = false;
+        // 设置统一消息头
+        response.setContentType("application/json; charset=UTF-8");
+        response.setCharacterEncoding("utf-8");
         //白名单控制
         if (whitelist == null || "".equals(whitelist)) {
             boolResult = true;
@@ -39,9 +42,6 @@ public class RequestFilter extends HandlerInterceptorAdapter {
             long count = list.stream().filter(ip::equals).count();
             // 访客存在白名单
             if (count != 0) {
-                // 设置统一消息头
-                response.setContentType("application/json; charset=UTF-8");
-                response.setCharacterEncoding("utf-8");
                 // 通过本次请求
                 boolResult = true;
             }else {

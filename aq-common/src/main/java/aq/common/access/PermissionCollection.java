@@ -23,8 +23,8 @@ public class PermissionCollection {
     }
 
     //构造函数(有参)
-    public PermissionCollection(String userId, HashMap<String,Permission> map){
-      this.allPermission = new ArrayList<Permission>();
+    public PermissionCollection(HashMap<String,Permission> map){
+      this.pvSet = new HashSet<String>();
       mapPermission  = map;
       this.allPermission = null;
     }
@@ -106,7 +106,7 @@ public class PermissionCollection {
 
     //添加所有权限值
     public void addAllPermission(){
-      this.allPermission.forEach(p->{
+      this.getAllPermission().forEach(p->{
           this.pvSet.add(p.getPv());
       });
     }

@@ -28,7 +28,35 @@ public interface SystemDao {
     //查询用户基本信息
     List<Map<String,Object>> selectUserInfo(Map<String,Object> map);
 
+    //查询用户拥有的权限
+    List<Map<String,Object>> selectSysPermissionUser(Map<String,Object> map);
 
+    //权限查询
+    List<Map<String,Object>> selectSysPermissionInfo(Map<String,Object> map);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //权限-新增
+    int insertSysPermission(Map<String,Object> map);
 
 
 
@@ -108,20 +136,17 @@ public interface SystemDao {
     int insertSysPermissionRole(Map<String,Object> map);
 
 
-    //权限分页查询
-    List<Map<String,Object>> selectSysPermission(Map<String,Object> map);
+
 
     //权限-更新
     int updateSysPermission(Map<String,Object> map);
 
-    //权限-新增
-    int insertSysPermission(Map<String,Object> map);
+
 
     //用户添加权限
     int insertSysPermissionUser(Map<String,Object> map);
 
-    //查询用户拥有的权限
-    List<Map<String,Object>> selectSysPermissionUser(Map<String,Object> map);
+
 
     //删除用户拥有的权限
     int deleteSysPermissionUser(Map<String, Object> map);

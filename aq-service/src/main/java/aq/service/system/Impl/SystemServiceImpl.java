@@ -2,20 +2,13 @@ package aq.service.system.Impl;
 
 import aq.common.annotation.DyncDataSource;
 import aq.common.other.Rtn;
-import aq.common.serializer.SerializerRtn;
 import aq.common.util.*;
 import aq.dao.system.SystemDao;
 import aq.service.base.Impl.BaseServiceImpl;
 import aq.service.system.Func;
 import aq.service.system.SystemService;
-import com.aliyun.oss.common.utils.DateUtil;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.google.gson.*;
-import com.google.inject.spi.StaticInjectionRequest;
-import com.sun.corba.se.spi.ior.IdentifiableFactory;
 import org.springframework.stereotype.Service;
-
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -43,6 +36,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
                 rtn.setCode(498);
                 rtn.setMessage("用户名或密码不允许为空！");
             }else {
+                map.clear();
                 map.put("userName",userName);
                 List<Map<String,Object>> mapList = sysDao.selectSysLogin(map);
                 if (mapList.size()<=0){
@@ -59,20 +53,16 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
                         map.clear();
                         map.put("administratorId",mapList.get(0).get("ID"));
                         List<Map<String, Object>> tokenList = sysDao.selectSysToken(map);
+                        map.clear();
+                        map.put("exptime",localDateTime);
+                        map.put("token",token);
+                        map.put("refreshToken",refreshToken);
                         if(tokenList.size()>0){
-                            map.clear();
                             map.put("administratorId",tokenList.get(0).get("administratorId"));
-                            map.put("exptime",localDateTime);
-                            map.put("token",token);
-                            map.put("refreshToken",refreshToken);
                             map.put("refresh",tokenList.get(0).get("refreshToken"));
                             sysDao.updateSytToken(map);
                         }else {
-                            map.clear();
                             map.put("administratorId",mapList.get(0).get("ID"));
-                            map.put("exptime",localDateTime);
-                            map.put("token",token);
-                            map.put("refreshToken",refreshToken);
                             sysDao.insertSytToken(map);
                         }
                         rtn.setCode(200);
@@ -84,7 +74,6 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
                     }
                 }
             }
-
         }else {
             rtn.setCode(499);
             rtn.setMessage("参数格式不正确！");
@@ -101,23 +90,28 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         String token = UUIDUtil.getUUID();
         String refreshToken = UUIDUtil.getUUID();
         Map map = new HashMap();
-        map.clear();
-        map.put("refresh",jsonObject.get("refreshToken").getAsString());
-        List<Map> list = sysDao.selectSysToken(map);
-        if(list.size()<=0){
-            rtn.setCode(50002);
-            rtn.setMessage("刷新token不符合!");
+        if(StringUtil.isEmpty(jsonObject.get("refreshToken"))) {
+            rtn.setCode(50003);
+            rtn.setMessage("刷新token不允许为空!");
         }else {
             map.clear();
-            map.put("administratorId",list.get(0).get("administratorId"));
-            map.put("exptime",localDateTime);
-            map.put("token",token);
-            map.put("refreshToken",refreshToken);
             map.put("refresh",jsonObject.get("refreshToken").getAsString());
-            sysDao.updateSytToken(map);
-            data = GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(map)).getAsJsonObject();
-            rtn.setCode(200);
-            rtn.setMessage("success");
+            List<Map> list = sysDao.selectSysToken(map);
+            if(list.size()<=0){
+                rtn.setCode(50002);
+                rtn.setMessage("刷新token不符合!");
+            }else {
+                map.clear();
+                map.put("administratorId",list.get(0).get("administratorId"));
+                map.put("exptime",localDateTime);
+                map.put("token",token);
+                map.put("refreshToken",refreshToken);
+                map.put("refresh",jsonObject.get("refreshToken").getAsString());
+                sysDao.updateSytToken(map);
+                data = GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(map)).getAsJsonObject();
+                rtn.setCode(200);
+                rtn.setMessage("success");
+            }
         }
         rtn.setData(data);
         return Func.functionRtnToJsonObject.apply(rtn);
@@ -126,19 +120,95 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
     @Override
     public JsonObject queryUserInfo(JsonObject jsonObject) {
         Rtn rtn = new Rtn("System");
-        jsonObject.addProperty("service","System");
-        JsonObject user = verifyToken(jsonObject,(map)->{
-            return sysDao.selectSysToken(map);
-        },(map)->{
-            return sysDao.selectUserInfo(map);
-        });
-        if(!StringUtil.isEmpty(user.get("code"))){
-            return user;
+        JsonObject data = new JsonObject();
+        Map map = new HashMap();
+        map.clear();
+        map = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        List<Map<String, Object>> users = sysDao.selectUserInfo(map);
+        if(users.size() <= 0){
+            rtn.setCode(60003);
+            rtn.setMessage("当前登录者不存在!");
+        }else {
+            rtn.setCode(200);
+            rtn.setMessage("success");
+
         }
+        data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(users.get(0))).getAsJsonObject();
+        rtn.setData(data);
+        return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+    @Override
+    public JsonObject queryToken(JsonObject jsonObject) {
+        Rtn rtn = new Rtn("System");
+        JsonObject data = new JsonObject();
+        Map map = new HashMap();
+        map.clear();
+        map = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        List<Map<String, Object>> tokens = sysDao.selectSysToken(map);
+        if(tokens.size() <= 0){
+            rtn.setCode(50002);
+            rtn.setMessage("token不符合!");
+        }else {
+            if(isTokenExpire(tokens.get(0))) {
+                rtn.setCode(50001);
+                rtn.setMessage("token过期！");
+            }else {
+                rtn.setCode(200);
+                rtn.setMessage("success");
+            }
+        }
+        data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(tokens.get(0))).getAsJsonObject();
+        rtn.setData(data);
+        return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+    @Override
+    public JsonObject querySysPermissionUser(JsonObject jsonObject) {
+        Rtn rtn = new Rtn("System");
+        JsonObject data = new JsonObject();
+        JsonArray jsonArray = new JsonArray();
+        Map map = new HashMap();
+        map.clear();
+        map = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        List<Map<String, Object>> permissions = sysDao.selectSysPermissionUser(map);
+        jsonArray =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(permissions)).getAsJsonArray();
+        data.add("items",jsonArray);
         rtn.setCode(200);
         rtn.setMessage("success");
-        rtn.setData(user);
+        rtn.setData(data);
         return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+    @Override
+    public JsonObject querySysPermissionInfo(JsonObject jsonObject) {
+        Rtn rtn = new Rtn("System");
+        JsonObject data = new JsonObject();
+        JsonArray jsonArray = new JsonArray();
+        Map map = new HashMap();
+        map.clear();
+        map = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        List<Map<String, Object>> permissions = sysDao.selectSysPermissionInfo(map);
+        if(permissions.size() <= 0){
+            rtn.setCode(40000);
+            rtn.setMessage("无此权限!");
+        }else {
+            rtn.setCode(200);
+            rtn.setMessage("success");
+        }
+        data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(permissions.get(0))).getAsJsonObject();
+        rtn.setData(data);
+        return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+    public Boolean isTokenExpire(Map map) {
+        Date date1 = new Date();
+        if(map.get("exptime") == null){
+            return true;
+        }
+        Date date2 = (Date) map.get("exptime");
+        Boolean aBoolean = DateTime.compareDate(date1, date2);
+        return aBoolean;
     }
 
 

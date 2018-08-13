@@ -1,5 +1,7 @@
 package aq.service.customer.Impl;
 
+import aq.common.access.AbsAccessUser;
+import aq.common.access.Factory;
 import aq.common.annotation.DyncDataSource;
 import aq.common.other.Rtn;
 import aq.common.util.GsonHelper;
@@ -38,12 +40,6 @@ public class CustomerServiceImpl extends BaseServiceImpl  implements CustomerSer
     @Override
     public JsonObject queryCustomerList(JsonObject jsonObject) {
         jsonObject.addProperty("service","Customer");
-        JsonObject user = verifyToken(jsonObject,(map)->{
-            return sysDao.selectSysToken(map);
-        },null);
-        if(!StringUtil.isEmpty(user.get("code"))){
-            return user;
-        }
         return query(jsonObject,(map)->{
             return customerDao.selectCustomerList(map);
         });
@@ -51,16 +47,13 @@ public class CustomerServiceImpl extends BaseServiceImpl  implements CustomerSer
 
     @Override
     public JsonObject insertCustomer(JsonObject jsonObject) {
+        AbsAccessUser user = Factory.getContext().user();
         Rtn rtn = new Rtn("Customer");
-        jsonObject.addProperty("service","Customer");
         Map<String,Object> res = new HashMap<>();
-        JsonObject user = verifyToken(jsonObject,(map)->{
-            return sysDao.selectSysToken(map);
-        },(map)->{
-            return sysDao.selectUserInfo(map);
-        });
-        if(!StringUtil.isEmpty(user.get("code"))){
-            return user;
+        if (user == null) {
+            rtn.setCode(10000);
+            rtn.setMessage("未登录！");
+            return Func.functionRtnToJsonObject.apply(rtn);
         }
         res.clear();
         res.put("customerUser",jsonObject.get("customerUser").getAsString());
@@ -81,8 +74,8 @@ public class CustomerServiceImpl extends BaseServiceImpl  implements CustomerSer
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         res.put("id",UUIDUtil.getUUID());
-        res.put("createUser",user.get("id").getAsString());
-        res.put("lastCreateUser",user.get("id").getAsString());
+        res.put("createUser",user.getUserId());
+        res.put("lastCreateUser",user.getUserId());
         res.put("createTime",new Date());
         res.put("lastCreateTime",new Date());
         customerDao.insertCustomer(res);
@@ -100,21 +93,18 @@ public class CustomerServiceImpl extends BaseServiceImpl  implements CustomerSer
 
     @Override
     public JsonObject updateCustomer(JsonObject jsonObject) {
+        AbsAccessUser user = Factory.getContext().user();
         Rtn rtn = new Rtn("Customer");
-        jsonObject.addProperty("service","Customer");
         Map<String,Object> res = new HashMap<>();
-        JsonObject user = verifyToken(jsonObject,(map)->{
-            return sysDao.selectSysToken(map);
-        },(map)->{
-            return sysDao.selectUserInfo(map);
-        });
-        if(!StringUtil.isEmpty(user.get("code"))){
-            return user;
+        if (user == null) {
+            rtn.setCode(10000);
+            rtn.setMessage("未登录！");
+            return Func.functionRtnToJsonObject.apply(rtn);
         }
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         res.put("id",res.get("customerId"));
-        res.put("lastCreateUser",user.get("id").getAsString());
+        res.put("lastCreateUser",user.getUserId());
         res.put("lastCreateTime",new Date());
         customerDao.updateCustomer(res);
         res.put("nickName",res.get("customerName"));
@@ -130,16 +120,7 @@ public class CustomerServiceImpl extends BaseServiceImpl  implements CustomerSer
     @Override
     public JsonObject deleteCustomer(JsonObject jsonObject) {
         Rtn rtn = new Rtn("Customer");
-        jsonObject.addProperty("service","Customer");
         Map<String,Object> res = new HashMap<>();
-        JsonObject user = verifyToken(jsonObject,(map)->{
-            return sysDao.selectSysToken(map);
-        },(map)->{
-            return sysDao.selectUserInfo(map);
-        });
-        if(!StringUtil.isEmpty(user.get("code"))){
-            return user;
-        }
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         customerDao.deleteCustomer(res);

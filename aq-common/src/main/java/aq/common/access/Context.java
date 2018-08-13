@@ -29,31 +29,11 @@ public class Context extends ContextBase{
 
     @Override
     public Ticket ticket() {
-        try {
             boolean hasToken = false;
             String token = null;
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-            Cookie[] cookies = request.getCookies();
-            if (cookies!=null&&cookies.length >0){
-                for (Cookie cookie : cookies){
-                    if (cookie.getName().trim().toUpperCase().equals("TOKEN")){
-                        hasToken = true;
-                        token = URLDecoder.decode(cookie.getValue(),"UTF-8");
-                    }
-                }
-            }
-            if (hasToken){
-                DES des = new DES(SECURITY_KEY,false);
-                if (StringUtil.isEmpty(token)) return null;
-                //解密
-                String decryptToken = des.decryptString(token);
-                Ticket ticket = new Ticket(token,decryptToken.split("\\^")[0], decryptToken.split("\\^")[1]);
-                return ticket;
-            }
-
-        }catch (Exception ex){
-            ex.printStackTrace();
-        }
-        return null;
+            Ticket ticket = new Ticket(request.getAttribute("token").toString(), request.getAttribute("userId").toString(), request.getAttribute("sessionId").toString());
+            return ticket;
     }
+
 }

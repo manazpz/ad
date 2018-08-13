@@ -10,6 +10,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 
@@ -59,6 +62,9 @@ public class BaseServiceImpl implements BaseService {
 
     public Boolean isTokenExpire(Map map) {
         Date date1 = new Date();
+        if(map.get("exptime") == null){
+            return true;
+        }
         Date date2 = (Date) map.get("exptime");
         Boolean aBoolean = DateTime.compareDate(date1, date2);
         return aBoolean;
