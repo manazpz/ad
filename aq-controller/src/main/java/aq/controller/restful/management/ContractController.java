@@ -50,4 +50,11 @@ public class ContractController extends aq.controller.restful.System {
         writerJson(response,out,contractService.deleteContract(requestJson));
     }
 
+    //获取TABS
+    @RequestMapping(value = "/get",method = RequestMethod.POST)
+    @ResponseBody
+    public void getContract(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,contractService.getContract(requestJson));
+    }
+
 }

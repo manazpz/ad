@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -63,13 +64,26 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("signTime", DateTime.compareDate(res.get("signTime").toString()));
         res.put("expireTime", DateTime.compareDate(res.get("expireTime").toString()));
         res.put("currency", res.get("currency"));
-        res.put("reamrks1", res.get("reamrks1"));
+        res.put("remarks1", res.get("reamrks1"));
         res.put("status", "BG");
         res.put("createUser",user.getUserId());
         res.put("lastCreateUser",user.getUserId());
+        res.put("del", "Y");
         res.put("createTime",new Date());
         res.put("lastCreateTime",new Date());
         contractDao.insertContract(res);
+        List<Map<String, Object>> maps = contractDao.selectContracExpenses(res);
+        if(maps.size() == 0){
+            res.put("no","10");
+        }else{
+            res.put("no",maps.size()*10 +10);
+        }
+        res.put("type","01");
+        res.put("amount",res.get("money_init"));
+        res.put("amount",res.get("money_init"));
+        res.put("payee",res.get("customerKeyA"));
+        res.put("payer",res.get("customerKeyB"));
+        contractDao.insertContractExpenses(res);
         rtn.setCode(200);
         rtn.setMessage("success");
         return Func.functionRtnToJsonObject.apply(rtn);
@@ -124,5 +138,11 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
-
+    @Override
+    public JsonObject getContract(JsonObject jsonObject) {
+        HashMap map = new HashMap();
+        Rtn rtn = new Rtn("Contract");
+        List<Map<String, Object>> tabs = contractDao.selectContracTabs(map);
+        return null;
+    }
 }

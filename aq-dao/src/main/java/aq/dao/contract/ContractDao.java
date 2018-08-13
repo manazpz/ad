@@ -20,4 +20,14 @@ public interface ContractDao {
     //删除/恢复合同信息
     int deleteContract(Map<String,Object> map);
 
+    //获取TABS数据
+    List<Map<String,Object>> selectContracTabs(Map<String,Object> map);
+
+    //新增合同收支明细
+    int insertContractExpenses(Map<String,Object> map);
+
+    //获取收支明细数据
+    List<Map<String,Object>> selectContracExpenses(Map<String,Object> map);
+
+
 }

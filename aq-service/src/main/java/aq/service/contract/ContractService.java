@@ -21,4 +21,8 @@ public interface ContractService extends BaseService {
     //删除/恢复商品
     JsonObject deleteContract(JsonObject jsonObject);
 
+    //获取TABS
+    JsonObject getContract(JsonObject jsonObject);
+
+
 }

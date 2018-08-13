@@ -26,6 +26,7 @@
         #{expireTime,jdbcType=TIMESTAMP},
         #{remarks1},
         #{remarks2},
+        #{del},
         #{createUser},
         #{lastCreateUser},
         #{createTime,jdbcType=TIMESTAMP},
@@ -175,6 +176,54 @@
         </trim>
         WHERE ZG.FD_ID = #{id}
     </update>
+
+
+    <!--插入收支明细数据-->
+    <insert id="insertContractExpenses" >
+        INSERT INTO ZDEV_CONTRACT_EXPENSES
+        VALUES(#{id},
+        #{no},
+        #{type},
+        #{amount},
+        #{payee},
+        #{payer},
+        #{createUser},
+        #{lastCreateUser},
+        #{createTime,jdbcType=TIMESTAMP},
+        #{lastCreateTime,jdbcType=TIMESTAMP},
+        #{remarks1})
+    </insert>
+
+    <!--查询合同收支明细-->
+    <select id="selectContracExpenses" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+	        ZC.FD_ID AS id,
+	        ZC.FD_NO AS no,
+	        ZC.FD_TYPE AS type,
+	        ZC.FD_AMOUNT AS amount,
+	        ZC.FD_PAYEE AS payee,
+	        ZC.FD_PAYER AS payer,
+	        ZC.FD_REMARKS AS remarks1,
+	        ZC.CREATE_USER AS createUser,
+	        ZC.LAST_CREATE_USER AS lastCreateUser,
+	        DATE_FORMAT(
+            ZC.CREATE_TIME,
+            '%Y-%m-%d %H:%i:%S'
+            ) AS createTime,
+            DATE_FORMAT(
+            ZC.LAST_CREATE_TIME,
+            '%Y-%m-%d %H:%i:%S'
+            ) AS lastCreateTime
+        FROM
+	        ZDEV_CONTRACT_EXPENSES ZC
+        WHERE
+            ZC.FD_ID = #{id}
+    </select>
+
+    <!--查询合同收支明细-->
+    <select id="selectContracTabs" resultType="java.util.Map" parameterType="java.util.Map">
+
+    </select>
 
 
 </mapper>
