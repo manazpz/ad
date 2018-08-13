@@ -32,7 +32,7 @@ public class CustomerController extends aq.controller.restful.System {
 
     //客户列表
     @ResponseBody
-    @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC1-9508-D07B9DD880AB"},name = {"客户-查询"})
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B9DD880AB"},name = {"客户-查询"})
     @RequestMapping(value = "list", method=RequestMethod.GET)
     public void  customerList(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
         JsonObject jsonObject = HttpUtil.getParameterMap(request);
@@ -41,7 +41,7 @@ public class CustomerController extends aq.controller.restful.System {
 
     //更新客户
     @RequestMapping(value = "/update",method = RequestMethod.POST)
-    @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC1-9508-D07B9DD880AA"},name = {"客户-更新"})
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B9DD880AA"},name = {"客户-更新"})
     @ResponseBody
     public void updateCustomer(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
         writerJson(response,out,customerService.updateCustomer(requestJson));
@@ -49,7 +49,7 @@ public class CustomerController extends aq.controller.restful.System {
 
     //删除客户
     @RequestMapping(value = "/delete",method = RequestMethod.POST)
-    @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC1-9508-D07B9DD880AD"},name = {"客户-删除"})
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B9DD880AD"},name = {"客户-删除"})
     @ResponseBody
     public void deleteCustomer(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
         writerJson(response,out,customerService.deleteCustomer(requestJson));
