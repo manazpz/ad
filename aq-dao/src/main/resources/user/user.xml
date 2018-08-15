@@ -16,7 +16,7 @@
         SELECT
         sa.ID AS id,
         sa.NICK_NAME AS nickName,
-        sa.HEAD_PORTRAIT AS headPortrait,
+        sat.FD_URL AS headPortrait,
         sa.USER_NAME AS userName,
         sa.PHONE AS phone,
         sa.EMAIL AS email,
@@ -33,6 +33,7 @@
         system_administrator sa
         LEFT JOIN system_config sc ON sc.KEY_WORD = sa. STATUS
         LEFT JOIN system_token st on sa.ID = st.ADMINISTRATOR_ID
+        LEFT JOIN system_attachment sat ON sat.ID = sa.HEAD_PORTRAIT
         WHERE 1=1
         <if test="id != null">
             AND sa.ID = #{id}
@@ -111,7 +112,7 @@
         WHERE sa.ID = #{id}
     </update>
 
-    <!--查询用户拥有的权限-->
+    <!--查询权限-->
     <select id="selectPermissionList" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
           sp.ID AS id,
@@ -164,4 +165,32 @@
         </trim>
         WHERE sp.ID = #{id}
     </update>
+
+    <!--查询用户权限-->
+    <select id="selectUserPermission" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+          ap.*
+        FROM
+        administrator_permission ap
+        WHERE 1=1 and ap.ADMINISTRATOR_ID  = #{userId}
+    </select>
+
+    <!--插入用户权限-->
+    <insert id="insertUserPermission" >
+        INSERT INTO administrator_permission
+        VALUES(#{userId},#{permissionId})
+    </insert>
+
+    <!--删除用户权限-->
+    <delete id="deleteUserPermission"  parameterType="java.util.Map" >
+        DELETE FROM administrator_permission WHERE 1=1
+        <if test="permissionId!=null and permissionId != ''">
+            AND ADMINISTRATOR_ID = #{userId} AND PERMISSION_ID = #{permissionId}
+        </if>
+        <if test="permissionId == null or permissionId == ''">
+            AND ADMINISTRATOR_ID = #{userId}
+        </if>
+
+    </delete>
+
 </mapper>

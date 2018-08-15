@@ -1,6 +1,11 @@
 package aq.controller.restful;
 
+import aq.common.access.AbsAccessUser;
+import aq.common.access.Factory;
+import aq.common.access.PermissionType;
+import aq.common.annotation.Permission;
 import aq.common.other.Rtn;
+import aq.common.util.FileUpload;
 import aq.common.util.HttpUtil;
 import aq.common.util.StringUtil;
 import aq.service.system.Func;
@@ -9,11 +14,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
+import java.util.Map;
 
 
 @Controller
@@ -56,62 +64,35 @@ public class System extends Base {
     }
     //endregion
 
-
-
-
-
-
-
-
-
-
-
-
-    //region 用户
-    //查询
-    @RequestMapping(value = "/user/get/{param}",method = RequestMethod.GET)
+    //修改密码
+    @RequestMapping(value = "/changePwd",method = RequestMethod.POST)
     @ResponseBody
-    public void userGet(@PathVariable(value = "param") String requestStr, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        writerJson(response,out,systemService.queryUser(StringUtil.toJsonObject(requestStr)));
+    public void changePwd(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,systemService.updatePassword(requestJson));
     }
 
-    //新增
-    @RequestMapping(value = "/user/put",method = RequestMethod.POST)
+    //重置密码
+    @RequestMapping(value = "/resetPwd",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, value = {"78496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"管理员"})
     @ResponseBody
-    public void userPut(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        writerJson(response,out,systemService.insertUser(requestJson));
+    public void resetPwd(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,systemService.resetPassword(requestJson));
     }
 
-    //修改
-    @RequestMapping(value = "/user/post",method = RequestMethod.POST)
+    //上传头像
+    @RequestMapping(value = "/uploadHead",method = RequestMethod.POST)
     @ResponseBody
-    public void userPost(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        writerJson(response,out,systemService.updateUser(requestJson));
+    public void uploadHead(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        MultipartFile haedImg = multipartRequest.getFile("avatar");
+        FileUpload fileUpload = new FileUpload();
+        String suffix = haedImg.getOriginalFilename().substring(haedImg.getOriginalFilename().lastIndexOf(".") + 1);
+        String url = fileUpload.upload(haedImg, "/depot/head", request);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("size",haedImg.getSize());
+        jsonObject.addProperty("extend",suffix);
+        jsonObject.addProperty("url",url);
+        writerJson(response,out,systemService.uploadImg(jsonObject));
     }
-
-    //删除
-    @RequestMapping(value = "/user/delete",method = RequestMethod.POST)
-    @ResponseBody
-    public void userDelete(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        writerJson(response,out,systemService.deleteUser(requestJson));
-    }
-    //endregion
-
-    //region 组织
-    //查询
-    @RequestMapping(value = "/organization/get/{param}",method = RequestMethod.GET)
-    @ResponseBody
-    public void organizationGet(@PathVariable(value = "param") String requestStr, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-            writerJson(response,out,systemService.queryOrganization(StringUtil.toJsonObject(requestStr)));
-    }
-
-    //组织-查询-根据ID
-    @RequestMapping(value = "/organization/expand/get/{param}",method = RequestMethod.GET)
-    @ResponseBody
-    public void organizationGetById(@PathVariable(value = "param") String param, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        writerJson(response,out,systemService.queryOrganizationById(StringUtil.toJsonObject(param)));
-    }
-    //endregion
-
 
 }

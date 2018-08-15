@@ -88,18 +88,33 @@ public class RequestFilter extends aq.common.interceptor.RequestFilter {
 
             //校验权限
             if(permission != null) {
+                Boolean flag = false;
                 AccessUser accessUser = (AccessUser) context.user();
-                if(accessUser.getPermissionCollection() == null) {
+                PermissionCollection permissionCollection = accessUser.getPermissionCollection();
+                if (permissionCollection == null) {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "No authority");
-                }else if (accessUser.getPermissionCollection().containAny(permission.value()) == false){
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission check failed");
-                    return false;
                 }else {
-                    String[] value = permission.value();
-                    //过滤条件
-                    for (String str : value) {
-                        res.addProperty("id",str);
-                        JsonObject jsonObject = systemService.querySysPermissionInfo(res);
+                    List<aq.common.access.Permission> allPermission = permissionCollection.getAllPermission();
+                    for (aq.common.access.Permission obj : allPermission) {
+                        if("AM".equals(obj.getModule()))      {
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if(flag){
+                        isAccessed = true;
+                    }else {
+                        if (permissionCollection.containAny(permission.value()) == false){
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission check failed");
+                            return false;
+                        }else {
+                            String[] value = permission.value();
+                            //过滤条件
+                            for (String str : value) {
+                                res.addProperty("id",str);
+                                JsonObject jsonObject = systemService.querySysPermissionInfo(res);
+                            }
+                        }
                     }
                 }
             }

@@ -14,7 +14,7 @@ public interface UserDao {
     //获取用户信息
     List<Map<String,Object>> selectUserInfo(Map<String,Object> map);
 
-    //获取用户信息
+    //更新用户信息
     int updateUserInfo(Map<String,Object> map);
 
     //删除/恢复用户
@@ -28,5 +28,14 @@ public interface UserDao {
 
     //更新权限
     int updatePermission(Map<String,Object> map);
+
+    //权限查询
+    List<Map<String,Object>> selectUserPermission(Map<String,Object> map);
+
+    //新增用户权限
+    int insertUserPermission(Map<String,Object> map);
+
+    //删除用户权限
+    int deleteUserPermission(Map<String,Object> map);
 
 }

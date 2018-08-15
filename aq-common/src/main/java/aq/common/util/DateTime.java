@@ -150,8 +150,6 @@ public class DateTime {
     }
     /**
      * 比较2个时间
-     * @param date1
-     * @param date2
      * @return
      */
     public static Date compareDate(String date){

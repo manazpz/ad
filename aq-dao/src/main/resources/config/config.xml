@@ -31,7 +31,7 @@
 
     <!--删除配置表-->
     <delete id="deleteConfig"  parameterType="java.util.Map" >
-        DELETE system_config WHERE ID = #{id}
+        DELETE FROM system_config WHERE ID = #{id}
     </delete>
 
     <!--查询客户主数据-->

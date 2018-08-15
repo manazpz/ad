@@ -14,7 +14,7 @@ public interface UserService extends BaseService {
     //获取用户信息
     JsonObject queryUserInfo(JsonObject jsonObject);
 
-    //获取用户信息
+    //更新用户信息
     JsonObject updateUserInfo(JsonObject jsonObject);
 
     //删除/恢复用户
@@ -28,5 +28,11 @@ public interface UserService extends BaseService {
 
     //新增权限
     JsonObject insertPermission(JsonObject jsonObject);
+
+    //用户权限列表
+    JsonObject selectUserPermission(JsonObject jsonObject);
+
+    //用户权限分配
+    JsonObject updateUserPermission(JsonObject jsonObject);
 
 }

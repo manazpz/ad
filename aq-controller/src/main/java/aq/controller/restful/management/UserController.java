@@ -3,6 +3,7 @@ package aq.controller.restful.management;
 import aq.common.access.PermissionType;
 import aq.common.annotation.Permission;
 import aq.common.util.HttpUtil;
+import aq.common.util.StringUtil;
 import aq.service.system.UserService;
 import com.google.gson.JsonObject;
 import org.springframework.stereotype.Controller;
@@ -76,6 +77,22 @@ public class UserController extends aq.controller.restful.System {
     @ResponseBody
     public void updatePermission(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
         writerJson(response,out,userService.updatePermission(requestJson));
+    }
+
+    //查询用户权限
+    @RequestMapping(value = "/permissions/{userId}",method = RequestMethod.GET)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC1-9508-D07B9DD880CA"},name = {"权限-查询"})
+    @ResponseBody
+    public void userPermission(@PathVariable(value = "userId") String userId,HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,userService.selectUserPermission(StringUtil.toJsonObject("userId",userId)));
+    }
+
+    //分配权限
+    @RequestMapping(value = "/permission/allot",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B9DD880CD"},name = {"权限-分配"})
+    @ResponseBody
+    public void updateUserPermission(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,userService.updateUserPermission(requestJson));
     }
 
 }

@@ -30,53 +30,13 @@ public interface SystemService extends BaseService {
     //查询用户信息
     JsonObject querySysPermissionInfo(JsonObject jsonObject);
 
+    //更新用户密码
+    JsonObject updatePassword(JsonObject jsonObject);
 
+    //重置用户密码
+    JsonObject resetPassword(JsonObject jsonObject);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //region 用户
-    //查询
-    JsonObject queryUser(JsonObject jsonObject);
-
-    //新增
-    JsonObject insertUser(JsonObject jsonObject);
-
-    //修改
-    JsonObject updateUser(JsonObject jsonObject);
-
-    //删除
-    JsonObject deleteUser(JsonObject jsonObject);
-    //endregion
-
-    //region 组织
-    //查询
-    JsonObject queryOrganization(JsonObject jsonObject);
-
-    JsonObject queryOrganizationById(JsonObject jsonObject);
-
-    //新增
-    JsonObject insertOrganization(JsonObject jsonObject);
-
-    //修改
-    JsonObject updateOrganization(JsonObject jsonObject);
-
-    //删除
-    JsonObject deleteOrganization(JsonObject jsonObject);
-    //endregion
+    //上传头像
+    JsonObject uploadImg(JsonObject jsonObject);
 
 }

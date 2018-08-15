@@ -50,7 +50,7 @@ public class PermissionCollection {
     }
 
     //Get 所有权限
-    protected List<Permission> getAllPermission(){
+    public List<Permission> getAllPermission(){
         if (this.allPermission==null){
             this.allPermission = new ArrayList<>();
             if (mapPermission!=null&&mapPermission.size()>0){

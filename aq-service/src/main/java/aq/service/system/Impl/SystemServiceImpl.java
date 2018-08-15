@@ -1,5 +1,7 @@
 package aq.service.system.Impl;
 
+import aq.common.access.AbsAccessUser;
+import aq.common.access.Factory;
 import aq.common.annotation.DyncDataSource;
 import aq.common.other.Rtn;
 import aq.common.util.*;
@@ -19,7 +21,7 @@ import java.util.*;
  */
 @Service("serviceSystem")
 @DyncDataSource
-public class SystemServiceImpl extends BaseServiceImpl  implements SystemService  {
+public class SystemServiceImpl extends BaseServiceImpl  implements SystemService {
 
     @Resource
     private SystemDao sysDao;
@@ -210,148 +212,97 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         return aBoolean;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     @Override
-    public JsonObject queryUser(JsonObject jsonObject) {
-        jsonObject.addProperty("service","System");
-        return query(jsonObject,(map)->{
-            return sysDao.queryUser(map);
-        });
-    }
-
-    @Override
-    public JsonObject insertUser(JsonObject jsonObject) {
-        return null;
-    }
-
-    @Override
-    public JsonObject updateUser(JsonObject jsonObject) {
-        return null;
-    }
-
-    @Override
-    public JsonObject deleteUser(JsonObject jsonObject) {
-        return null;
-    }
-
-    @Override
-    public JsonObject queryOrganization(JsonObject jsonObject) {
-      jsonObject.addProperty("service","System");
-      return   query(jsonObject,(map)->{
-          return sysDao.queryOrganization(map);
-        });
-    }
-
-    @Override
-    public JsonObject queryOrganizationById(JsonObject jsonObject) {
-        Rtn rtn = new Rtn(jsonObject.get("service").getAsString());
-        JsonObject data = new JsonObject();
-        JsonArray jsonArray = new JsonArray();
-        ArrayList list = new ArrayList();
-        Map<String,Object> map = new HashMap<>();
-        map.put("id",jsonObject.get("id").getAsString());
-        List<Map<String,Object>> mapList = sysDao.queryOrganization(map);
-
-        if (mapList.size()>0){
-            List<Map<String,Object>> mapListC = null;
-            List<Map<String,Object>> mapListD = null;
-            List<Map<String,Object>> mapListP = null;
-            map.clear();
-            list.clear();
-            String orgId = mapList.get(0).get("ORGID").toString(),parentId = null;
-            switch (mapList.get(0).get("ORGTYPE").toString()){
-                case "1":  //公司  上级机构
-                    list.add("1");
-                    map.put("orgType",list);
-                    map.put("parentId","");
-                    mapListC = sysDao.queryOrganization(map);
-                    break;
-                case "2":  //部门
-                    //公司
-                    list.add("1");
-                    map.put("orgType",list);
-                    mapListC = sysDao.queryOrganization(map);
-                    //上级机构
-                    list.clear();
-                    list.add("2");
-                    map.put("orgType",list);
-                    map.put("orgId",orgId);
-
-                    break;
-                case "4":  //岗位
-                    orgId = mapList.get(0).get("ORGID").toString();
-                    break;
-                case "8":  //人员
-//                    map.clear();
-//                    list.add("1");
-//                    map.put("orgType",list);
-//                    List<Map<String,Object>> mapListC = sysDao.queryOrganization(map);
-//                    jsonArray =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(mapListC)).getAsJsonArray();
-//                    data.add("items_0",jsonArray);
-
-                    break;
-            }
-
-//            map.clear();
-//            list.clear();
-//            list.add("2");
-//            map.put("orgType",list);
-//            map.put("parentId",mapList.get(0).get("ORGID"));
-//            List<Map<String,Object>> mapListD = sysDao.queryOrganization(map);
-//            jsonArray =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(mapListD)).getAsJsonArray();
-//            data.add("items_1",jsonArray);
-//
-//            map.clear();
-//            list.clear();
-//            list.add("4");
-//            map.put("orgType",list);
-//            map.put("parentId",mapList.get(0).get("PARENTID"));
-//            List<Map<String,Object>> mapListP = sysDao.queryOrganization(map);
-//            jsonArray =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(mapListP)).getAsJsonArray();
-//            data.add("items_2",jsonArray);
-
+    public JsonObject updatePassword(JsonObject jsonObject) {
+        Rtn rtn = new Rtn("User");
+        Map<String,Object> res = new HashMap<>();
+        AbsAccessUser user = Factory.getContext().user();
+        if (user == null) {
+            rtn.setCode(10000);
+            rtn.setMessage("未登录！");
         }else {
-            rtn.setCode(497);
-            rtn.setMessage("用户不存在！");
+            if(StringUtil.isEmpty(jsonObject.get("oldPwd")) || StringUtil.isEmpty(jsonObject.get("newPwd"))) {
+                rtn.setCode(10001);
+                rtn.setMessage("新旧密码不能为空！");
+            }else {
+                String oldPwd = MD5.getMD5String(jsonObject.get("oldPwd").getAsString().trim());
+                String newPwd = MD5.getMD5String(jsonObject.get("newPwd").getAsString().trim());
+                res.clear();
+                res.put("id",user.getUserId());
+                List<Map<String, Object>> lists = sysDao.selectPassword(res);
+                if(lists.size() <= 0) {
+                    rtn.setCode(10000);
+                    rtn.setMessage("未登录！");
+                }else {
+                    String aPwd = ((Map)lists.get(0)).get("pwd").toString();
+                    if(oldPwd.equals(aPwd)) {
+                        res.put("updateTime",new Date());
+                        res.put("password",newPwd);
+                        sysDao.updateUser(res);
+                        rtn.setCode(200);
+                        rtn.setMessage("success");
+                    }else {
+                        rtn.setCode(10002);
+                        rtn.setMessage("旧密码不符合，忘记请联系管理员重置！");
+                    }
+                }
+            }
         }
-        rtn.setFrom(jsonObject.get("from")==null?"":jsonObject.get("from").getAsString());
+        return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+    @Override
+    public JsonObject resetPassword(JsonObject jsonObject) {
+        Rtn rtn = new Rtn("User");
+        Map<String,Object> res = new HashMap<>();
+        if(StringUtil.isEmpty(jsonObject.get("id"))) {
+            rtn.setCode(10003);
+            rtn.setMessage("用户主键不为空！");
+        }else {
+            res.clear();
+            res.put("id",jsonObject.get("id").getAsString().trim());
+            res.put("updateTime",new Date());
+            res.put("password",MD5.getMD5String("123456"));
+            sysDao.updateUser(res);
+            rtn.setCode(200);
+            rtn.setMessage("success");
+        }
+        return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+    @Override
+    public JsonObject uploadImg(JsonObject jsonObject) {
+        Rtn rtn = new Rtn("User");
+        AbsAccessUser user = Factory.getContext().user();
+        Map map = new HashMap();
+        JsonObject data = new JsonObject();
+        map.clear();
+        map = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        if (user == null) {
+            rtn.setCode(10000);
+            rtn.setMessage("未登录！");
+        }else {
+            String userId = user.getUserId();
+            String uuid = UUIDUtil.getUUID();
+            map.put("id",uuid);
+            map.put("type","TXA");
+            map.put("refId",userId);
+            map.put("createUser",userId);
+            map.put("lastCreateUser",userId);
+            map.put("createTime",new Date());
+            map.put("lastCreateTime",new Date());
+            sysDao.insertAttachment(map);
+            data.addProperty("headImg",map.get("url").toString());
+            map.clear();
+            map.put("id",userId);
+            map.put("updateTime",new Date());
+            map.put("headPortrait",uuid);
+            sysDao.updateUser(map);
+            rtn.setCode(200);
+            rtn.setMessage("success");
+        }
         rtn.setData(data);
-        return  Func.functionRtnToJsonObject.apply(rtn);
-    }
-
-    @Override
-    public JsonObject insertOrganization(JsonObject jsonObject) {
-        return null;
-    }
-
-    @Override
-    public JsonObject updateOrganization(JsonObject jsonObject) {
-        return null;
-    }
-
-    @Override
-    public JsonObject deleteOrganization(JsonObject jsonObject) {
-        return null;
+        return Func.functionRtnToJsonObject.apply(rtn);
     }
 
 }

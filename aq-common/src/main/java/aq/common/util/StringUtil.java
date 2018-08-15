@@ -180,4 +180,10 @@ public class StringUtil {
         return GsonHelper.getInstanceJsonparser().parse(str).getAsJsonObject();
     }
 
+    public static JsonObject toJsonObject(String key, String str){
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty(key,GsonHelper.getInstanceJsonparser().parse(str).getAsString());
+        return jsonObject;
+    }
+
 }
