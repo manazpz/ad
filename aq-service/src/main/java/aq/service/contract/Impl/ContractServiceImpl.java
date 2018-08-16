@@ -74,18 +74,6 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("createTime",new Date());
         res.put("lastCreateTime",new Date());
         contractDao.insertContract(res);
-        List<Map<String, Object>> maps = contractDao.selectContracExpenses(res);
-        if(maps.size() == 0){
-            res.put("no","10");
-        }else{
-            res.put("no",maps.size()*10 +10);
-        }
-        res.put("type","01");
-        res.put("amount",res.get("money_init"));
-        res.put("amount",res.get("money_init"));
-        res.put("payee",res.get("customerKeyA"));
-        res.put("payer",res.get("customerKeyB"));
-        contractDao.insertContractExpenses(res);
         rtn.setCode(200);
         rtn.setMessage("success");
         return Func.functionRtnToJsonObject.apply(rtn);
@@ -245,6 +233,41 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             res.put("no",maps.size()*10 +10);
         }
         contractDao.insertContractSub(res);
+        rtn.setCode(200);
+        rtn.setMessage("success");
+        return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+
+    @Override
+    public JsonObject insertContractExpnses(JsonObject jsonObject) {
+        AbsAccessUser user = Factory.getContext().user();
+        Rtn rtn = new Rtn("Contract");
+        Map<String,Object> res = new HashMap<>();
+        if (user == null) {
+            rtn.setCode(10000);
+            rtn.setMessage("未登录！");
+            return Func.functionRtnToJsonObject.apply(rtn);
+        }
+        res.clear();
+        res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        res.put("id",res.get("id"));
+//        List<Map<String, Object>> maps = contractDao.selectContracExpenses(res);
+//        if(maps.size() == 0){
+//            res.put("no","10");
+//        }else{
+//            res.put("no",maps.size()*10 +10);
+//        }
+//        res.put("typePaye",res.get("typePaye"));
+//        res.put("payee",res.get("customerKeyA"));
+//        res.put("payer",res.get("customerKeyB"));
+//        if("FK".equals(res.get("typePaye"))){
+//            res.put("amount","-"+ res.get("money_init"));
+//        }else{
+//            res.put("amount",res.get("money_init"));
+//        }
+//        contractDao.insertContractExpenses(res);
+
         rtn.setCode(200);
         rtn.setMessage("success");
         return Func.functionRtnToJsonObject.apply(rtn);

@@ -33,6 +33,9 @@ public interface ContractService extends BaseService {
     //新增合同
     JsonObject insertContractSub(JsonObject jsonObject);
 
+    //新增合同
+    JsonObject insertContractExpnses(JsonObject jsonObject);
+
 
 
 

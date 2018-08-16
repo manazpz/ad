@@ -91,5 +91,13 @@ public class ContractController extends aq.controller.restful.System {
     }
 
 
+    //新增合同合作伙伴明细
+    @RequestMapping(value = "/insertExpnses",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B6DD890DC"},name = {"合同-新增"})
+    @ResponseBody
+    public void createContractExpnses(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,contractService.insertContractExpnses(requestJson));
+    }
+
 
 }
