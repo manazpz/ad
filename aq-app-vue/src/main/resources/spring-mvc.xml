@@ -36,6 +36,8 @@
             <mvc:mapping path="/sys/**" />
             <mvc:mapping path="/customer/**" />
             <mvc:mapping path="/user/**" />
+            <mvc:mapping path="/contract/**" />
+            <mvc:mapping path="/goods/**" />
             <bean  class="aq.app.vue.interceptor.RequestFilter">
                 <property name="whitelist" value="${server.http.whiteList}"></property>
             </bean>

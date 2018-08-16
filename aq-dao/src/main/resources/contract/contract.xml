@@ -34,7 +34,7 @@
     </insert>
 
 
-    <!--查询客户主数据-->
+    <!--查询合同主数据-->
     <select id="selectContracList" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
             ZG.FD_ID AS id,
@@ -103,7 +103,7 @@
         </if>
     </select>
 
-    <!--更新客户主数据-->
+    <!--更新合同主数据-->
     <update id="updateContract" parameterType="java.util.Map">
         UPDATE ZDEV_CONTRACT_MAIN ZG
         <trim prefix="set" suffixOverrides=",">
@@ -166,7 +166,7 @@
         WHERE ZG.FD_ID = #{id}
     </update>
 
-    <!--删除/恢复客户信息-->
+    <!--删除/恢复合同信息-->
     <update id="deleteContract" parameterType="java.util.Map">
         UPDATE ZDEV_CONTRACT_MAIN ZG
         <trim prefix="set" suffixOverrides=",">
@@ -216,14 +216,139 @@
             ) AS lastCreateTime
         FROM
 	        ZDEV_CONTRACT_EXPENSES ZC
-        WHERE
-            ZC.FD_ID = #{id}
+        WHERE 1=1
+            AND ZC.FD_ID = #{id}
     </select>
 
-    <!--查询合同收支明细-->
-    <select id="selectContracTabs" resultType="java.util.Map" parameterType="java.util.Map">
 
+    <!--查询合同合作伙伴数明细-->
+    <select id="selectContracPartner" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+            ZCM.FD_NAME AS name,
+            ZCN.FD_NUMBER AS num,
+            SC. NAME AS cust,
+            ZCN.FD_TITLE AS title,
+            ZCN.FD_INCOME AS income,
+            ZC.FD_PROPORTIONS AS pro,
+            DATE_FORMAT(
+                ZCN.FD_SIGN_TIME,
+                '%Y-%m-%d'
+            ) AS signTime,
+            DATE_FORMAT(
+                ZCN.FD_EXPIRE_TIME,
+                '%Y-%m-%d'
+            ) AS expireTime,
+            ZCN.FD_MONEY_INIT AS money_init,
+            SCS. NAME AS status
+        FROM
+            ZDEV_CONTRACT_PARTNER ZC
+        LEFT JOIN ZDEV_CUSTOMER_MAIN ZCM ON ZCM.FD_ID = ZC.FD_USER
+        LEFT JOIN ZDEV_CONTRACT_MAIN ZCN ON ZCN.FD_ID = ZC.FD_ID
+        LEFT JOIN system_config SC ON SC.KEY_WORD = ZC.FD_CUSTOMER
+        AND SC.TYPE = 'TYPEC'
+        LEFT JOIN system_config SCS ON SCS.KEY_WORD = ZCN.FD_STATUS
+        AND SCS.TYPE = 'CONTRACT'
+        WHERE 1=1 AND ZC.FD_ID = #{id}
     </select>
 
+
+    <!--插入子合同数据-->
+    <insert id="insertContractPartner" >
+        INSERT INTO ZDEV_CONTRACT_PARTNER
+        VALUES(#{id},
+        #{no},
+        #{user},
+        #{types},
+        #{income},
+        #{proportions},
+        #{createUser},
+        #{lastCreateUser},
+        #{createTime,jdbcType=TIMESTAMP},
+        #{lastCreateTime,jdbcType=TIMESTAMP},
+        #{remarks1})
+    </insert>
+
+
+    <!--查询子合同明细-->
+    <select id="selectContractSubList" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+            ZG.FD_ID AS id,
+            ZG.FD_NUMBER AS number,
+            ZG.FD_PARENT AS parent,
+            ZG.FD_TITLE AS title,
+            ZG.FD_CUSTOMER_A AS customerKeyA,
+            CUSTOMER_A.NICK_NAME AS customer_a_Name,
+            ZG.FD_CUSTOMER_B AS customerKeyB,
+            CUSTOMER_B.NICK_NAME AS customer_b_Name,
+            ZG.FD_STATUS AS statusKey,
+            SC. NAME AS statusName,
+            ZG.FD_MONEY_INIT AS money_init,
+            ZG.FD_MONEY AS money,
+            ZG.FD_PAID AS paid,
+            ZG.FD_UNPAID AS unpaid,
+            ZG.FD_EXPENSES AS expenses,
+            ZG.FD_TAX AS tax,
+            ZG.FD_TAX_LIMIT AS taxlimit,
+            ZG.FD_INCOME AS income,
+            ZG.FD_CURRENCY AS currency,
+            DATE_FORMAT(ZG.FD_SIGN_TIME, '%Y-%m-%d') AS signTime,
+            DATE_FORMAT(
+                ZG.FD_EXPIRE_TIME,
+                '%Y-%m-%d'
+            ) AS expireTime,
+            ZG.CREATE_USER AS createUserId,
+            CREATE_USER.NICK_NAME AS createUserName,
+            ZG.LAST_CREATE_USER AS lastCreateUserId,
+            LAST_CREATE_USER.NICK_NAME AS lastCreateUserName,
+            DATE_FORMAT(
+                ZG.CREATE_TIME,
+                '%Y-%m-%d %H:%i:%S'
+            ) AS createTime,
+            DATE_FORMAT(
+                ZG.LAST_CREATE_TIME,
+                '%Y-%m-%d %H:%i:%S'
+            ) AS lastCreateTime,
+            ZG.FD_STATUS AS STATUS,
+            ZG.FD_REMARK1 AS reamrks1,
+            ZG.FD_DELETE AS del
+        FROM
+            ZDEV_CONTRACT_MAIN ZG
+        LEFT JOIN system_config SC ON SC.KEY_WORD = ZG.FD_STATUS
+        AND SC.TYPE = 'CONTRACT'
+        LEFT JOIN system_administrator CUSTOMER_A ON CUSTOMER_A.ID = ZG.FD_CUSTOMER_A
+        LEFT JOIN system_administrator CUSTOMER_B ON CUSTOMER_B.ID = ZG.FD_CUSTOMER_B
+        LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZG.CREATE_USER
+        LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZG.LAST_CREATE_USER
+        WHERE 1=1
+            AND ZG.FD_ID = (
+                SELECT
+                    ZCR.FD_SUB_ID
+                FROM
+                    ZDEV_CONTRACT_RELATION ZCR
+                WHERE
+                    ZCR.FD_ID = #{id}
+            )
+    </select>
+
+
+    <!--查询子合同明细-->
+    <select id="selectContracSub" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        *
+        FROM
+        ZDEV_CONTRACT_RELATION ZC
+        WHERE 1=1
+        AND ZC.FD_ID = #{parentId}
+    </select>
+
+
+    <!--插入父子子合同关系数据-->
+    <insert id="insertContractSub" >
+        INSERT INTO ZDEV_CONTRACT_RELATION
+        VALUES(
+        #{parentId},
+        #{no},
+        #{id})
+    </insert>
 
 </mapper>
