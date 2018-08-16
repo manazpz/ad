@@ -69,6 +69,7 @@
             <ref bean="dataSourceMaster" />
         </property>
     </bean>
+    <tx:annotation-driven transaction-manager="transactionManager" />
     <!-- 事务模板 -->
     <tx:advice id="txAdvice" transaction-manager="transactionManager">
         <tx:attributes>

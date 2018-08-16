@@ -10,6 +10,8 @@ import aq.service.system.Func;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +27,7 @@ public class ConfigServiceImpl extends BaseServiceImpl  implements ConfigService
     @Resource
     private ConfigDao configDao;
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryaConfig(JsonObject jsonObject) {
         Rtn rtn = new Rtn("Config");

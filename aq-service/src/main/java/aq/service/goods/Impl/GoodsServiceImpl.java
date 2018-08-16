@@ -12,6 +12,7 @@ import aq.service.goods.GoodsService;
 import aq.service.system.Func;
 import com.google.gson.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -29,6 +30,7 @@ public class GoodsServiceImpl extends BaseServiceImpl  implements GoodsService {
     @Resource
     private GoodsDao goodsDao;
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryGoodsList(JsonObject jsonObject) {
         jsonObject.addProperty("service","Goods");
@@ -37,6 +39,7 @@ public class GoodsServiceImpl extends BaseServiceImpl  implements GoodsService {
         });
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject insertGoods(JsonObject jsonObject) {
         AbsAccessUser user = Factory.getContext().user();
@@ -75,6 +78,7 @@ public class GoodsServiceImpl extends BaseServiceImpl  implements GoodsService {
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject updateGoods(JsonObject jsonObject) {
         AbsAccessUser user = Factory.getContext().user();
@@ -102,6 +106,7 @@ public class GoodsServiceImpl extends BaseServiceImpl  implements GoodsService {
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject deleteGoods(JsonObject jsonObject) {
         Rtn rtn = new Rtn("Goods");

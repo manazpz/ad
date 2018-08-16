@@ -11,6 +11,8 @@ import aq.service.system.Func;
 import aq.service.system.SystemService;
 import com.google.gson.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -26,6 +28,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
     @Resource
     private SystemDao sysDao;
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryLogin(JsonObject jsonObject){
         Map<String,Object> map = new HashMap<>();
@@ -84,6 +87,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject refreshToken(JsonObject jsonObject) {
         Rtn rtn = new Rtn("System");
@@ -119,6 +123,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryUserInfo(JsonObject jsonObject) {
         Rtn rtn = new Rtn("System");
@@ -139,6 +144,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryToken(JsonObject jsonObject) {
         Rtn rtn = new Rtn("System");
@@ -164,6 +170,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject querySysPermissionUser(JsonObject jsonObject) {
         Rtn rtn = new Rtn("System");
@@ -181,6 +188,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject querySysPermissionInfo(JsonObject jsonObject) {
         Rtn rtn = new Rtn("System");
@@ -212,6 +220,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         return aBoolean;
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject updatePassword(JsonObject jsonObject) {
         Rtn rtn = new Rtn("User");
@@ -251,6 +260,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject resetPassword(JsonObject jsonObject) {
         Rtn rtn = new Rtn("User");
@@ -270,6 +280,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject uploadImg(JsonObject jsonObject) {
         Rtn rtn = new Rtn("User");

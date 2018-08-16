@@ -16,6 +16,8 @@ import aq.service.system.UserService;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.*;
 
@@ -32,7 +34,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
     @Resource
     private SystemDao sysDao;
 
-
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject insertUserInfo(JsonObject jsonObject) {
         Rtn rtn = new Rtn("User");
@@ -48,6 +50,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryUserInfo(JsonObject jsonObject) {
         jsonObject.addProperty("service","User");
@@ -56,6 +59,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
         });
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject updateUserInfo(JsonObject jsonObject) {
         Rtn rtn = new Rtn("User");
@@ -69,6 +73,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject deleteUser(JsonObject jsonObject) {
         Rtn rtn = new Rtn("User");
@@ -81,6 +86,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject selectPermissionList(JsonObject jsonObject) {
         jsonObject.addProperty("service","User");
@@ -89,6 +95,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
         });
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject updatePermission(JsonObject jsonObject) {
         Rtn rtn = new Rtn("User");
@@ -101,6 +108,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject insertPermission(JsonObject jsonObject) {
         Rtn rtn = new Rtn("User");
@@ -114,6 +122,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject selectUserPermission(JsonObject jsonObject) {
         Rtn rtn = new Rtn("User");
@@ -172,6 +181,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject updateUserPermission(JsonObject jsonObject) {
         Rtn rtn = new Rtn("User");
