@@ -95,9 +95,17 @@ public class ContractController extends aq.controller.restful.System {
     @RequestMapping(value = "/insertExpnses",method = RequestMethod.POST)
     @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B6DD890DC"},name = {"合同-新增"})
     @ResponseBody
-    public void createContractExpnses(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
-        writerJson(response,out,contractService.insertContractExpnses(requestJson));
+    public void createContractExpnses(HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        writerJson(response,out,contractService.insertContractExpnses(jsonObject));
     }
 
+    //获取合同收支明细
+    @RequestMapping(value = "/queryExpnses",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"合同-查询"})
+    @ResponseBody
+    public void queryContractExpnses(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
+        writerJson(response,out,contractService.queryContractExpnses(requestJson));
+    }
 
 }

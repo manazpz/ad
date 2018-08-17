@@ -11,8 +11,11 @@ import aq.service.contract.ContractService;
 import aq.service.system.Func;
 import com.google.gson.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,6 +33,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     @Resource
     private ContractDao contractDao;
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryContractList(JsonObject jsonObject) {
         jsonObject.addProperty("service","Contract");
@@ -38,6 +42,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         });
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject insertContract(JsonObject jsonObject) {
         AbsAccessUser user = Factory.getContext().user();
@@ -79,6 +84,8 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject updateContract(JsonObject jsonObject) {
         AbsAccessUser user = Factory.getContext().user();
@@ -116,6 +123,8 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject deleteContract(JsonObject jsonObject) {
         Rtn rtn = new Rtn("Contract");
@@ -128,6 +137,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryContractPartner(JsonObject jsonObject) {
         jsonObject.addProperty("service","Contract");
@@ -137,6 +147,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     }
 
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject insertContractPartner(JsonObject jsonObject) {
         AbsAccessUser user = Factory.getContext().user();
@@ -171,6 +182,8 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         return Func.functionRtnToJsonObject.apply(rtn);
     }
 
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryContractSubtList(JsonObject jsonObject) {
         jsonObject.addProperty("service","Contract");
@@ -179,6 +192,8 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         });
     }
 
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject insertContractSub(JsonObject jsonObject) {
         AbsAccessUser user = Factory.getContext().user();
@@ -239,11 +254,15 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     }
 
 
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject insertContractExpnses(JsonObject jsonObject) {
         AbsAccessUser user = Factory.getContext().user();
+        DecimalFormat df = new DecimalFormat("#.00");
         Rtn rtn = new Rtn("Contract");
         Map<String,Object> res = new HashMap<>();
+        Map<String,Object> rest = new HashMap<>();
         if (user == null) {
             rtn.setCode(10000);
             rtn.setMessage("未登录！");
@@ -252,24 +271,75 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         res.put("id",res.get("id"));
-//        List<Map<String, Object>> maps = contractDao.selectContracExpenses(res);
-//        if(maps.size() == 0){
-//            res.put("no","10");
-//        }else{
-//            res.put("no",maps.size()*10 +10);
-//        }
-//        res.put("typePaye",res.get("typePaye"));
-//        res.put("payee",res.get("customerKeyA"));
-//        res.put("payer",res.get("customerKeyB"));
-//        if("FK".equals(res.get("typePaye"))){
-//            res.put("amount","-"+ res.get("money_init"));
-//        }else{
-//            res.put("amount",res.get("money_init"));
-//        }
-//        contractDao.insertContractExpenses(res);
-
+        List<Map<String, Object>> maps = contractDao.selectContracExpenses(res);
+        if(maps.size() == 0){
+            res.put("no","10");
+        }else{
+            res.put("no",maps.size()*10 +10);
+        }
+        res.put("type",res.get("typePaye"));
+        res.put("payee",res.get("payee"));
+        res.put("payer",res.get("payer"));
+        res.put("createUser",user.getUserId());
+        res.put("lastCreateUser",user.getUserId());
+        res.put("createTime",new Date());
+        res.put("lastCreateTime",new Date());
+        res.put("reamrks1",res.get("reamrks1"));
+        contractDao.insertContractExpenses(res);
+        rest.put("id",res.get("id"));
+        List<Map<String, Object>> maprest = contractDao.selectContracList(rest);
+        List<Map<String, Object>> mapPaetner = contractDao.selectContracPartner(rest);
+        double amount = Double.parseDouble(res.get("amount").toString());
+        if(maprest.size()>0 ){
+            if("FK".equals(res.get("typePaye"))){
+                //已垫付金额
+                double paid = Double.parseDouble(maprest.get(0).get("paid").toString());
+                double expenses = Double.parseDouble(maprest.get(0).get("expenses").toString());
+                rest.put("expenses",df.format(expenses+amount));
+                rest.put("income",df.format(paid-amount));
+            }else{
+                //实收总金额
+                double paid = Double.parseDouble(maprest.get(0).get("paid").toString());
+                double expenses = Double.parseDouble(maprest.get(0).get("expenses").toString());
+                double taxlimit = Double.parseDouble(maprest.get(0).get("taxlimit").toString());
+                rest.put("paid",df.format(paid+amount));
+                rest.put("income",df.format(paid/taxlimit-expenses));
+                rest.put("tax",df.format(paid/taxlimit));
+            }
+            //修改母合同信息
+            contractDao.updateContract(rest);
+        }
+        rest.clear();
+        Map<String, Object> finalRes = res;
+        mapPaetner.forEach(p->{
+            double pro = Double.parseDouble(p.get("pro").toString());
+            double paid = Double.parseDouble(maprest.get(0).get("paid").toString());
+            double taxlimit = Double.parseDouble(maprest.get(0).get("taxlimit").toString());
+            if("FK".equals(finalRes.get("typePaye"))){
+                //已垫付金额
+                rest.put("income",df.format((paid-amount)/pro));
+            }else{
+                //实收总金额
+                rest.put("income",df.format((paid/taxlimit-amount)/pro));
+            }
+            rest.put("no",p.get("no"));
+            rest.put("id",finalRes.get("id"));
+            //修改子合同收益
+            contractDao.updateContractPartner(rest);
+        });
         rtn.setCode(200);
         rtn.setMessage("success");
         return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
+    @Override
+    public JsonObject queryContractExpnses(JsonObject jsonObject) {
+        jsonObject.addProperty("service","Contract");
+        return query(jsonObject,(map)->{
+            return contractDao.selectContractExpnses(map);
+        });
     }
 }

@@ -36,6 +36,9 @@ public interface ContractService extends BaseService {
     //新增合同
     JsonObject insertContractExpnses(JsonObject jsonObject);
 
+    //获取合作收支明细
+    JsonObject queryContractExpnses(JsonObject jsonObject);
+
 
 
 

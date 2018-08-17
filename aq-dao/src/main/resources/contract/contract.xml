@@ -191,7 +191,7 @@
         #{lastCreateUser},
         #{createTime,jdbcType=TIMESTAMP},
         #{lastCreateTime,jdbcType=TIMESTAMP},
-        #{remarks1})
+        #{reamrks1})
     </insert>
 
     <!--查询合同收支明细-->
@@ -224,6 +224,7 @@
     <!--查询合同合作伙伴数明细-->
     <select id="selectContracPartner" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
+            ZC.FD_NO AS no,
             ZCM.FD_NAME AS name,
             ZCN.FD_NUMBER AS num,
             SC. NAME AS cust,
@@ -350,5 +351,36 @@
         #{no},
         #{id})
     </insert>
+
+
+    <!--更新合伙人信息-->
+    <update id="updateContractPartner" parameterType="java.util.Map">
+        UPDATE ZDEV_CONTRACT_PARTNER ZG
+        <trim prefix="set" suffixOverrides=",">
+            <if test="income!=null and income != ''">
+                ZG.FD_INCOME = #{income},
+            </if>
+        </trim>
+        WHERE ZG.FD_ID = #{id} AND  ZG.FD_NO =  #{no}
+    </update>
+
+
+
+    <!--查询合同合作伙伴数明细-->
+    <select id="selectContractExpnses" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+            ZC.FD_AMOUNT AS amount,
+            SAS.NICK_NAME AS payee,
+            SBS.NICK_NAME AS payer,
+            SC. NAME AS type,
+            DATE_FORMAT(ZC.CREATE_TIME, '%Y-%m-%d') AS creattime
+        FROM
+            ZDEV_CONTRACT_EXPENSES ZC
+        LEFT JOIN system_administrator SAS ON SAS.ID = ZC.FD_PAYEE
+        LEFT JOIN system_administrator SBS ON SBS.ID = ZC.FD_PAYER
+        LEFT JOIN system_config SC ON SC.KEY_WORD = ZC.FD_TYPE
+        AND SC.TYPE = 'TYPEPAY'
+        WHERE 1=1 AND ZC.FD_ID = #{id}
+    </select>
 
 </mapper>

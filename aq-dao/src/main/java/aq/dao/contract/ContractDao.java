@@ -42,6 +42,15 @@ public interface ContractDao {
     int insertContractSub(Map<String,Object> map);
 
 
+    //新增父子合同关系表
+    int updateContractPartner(Map<String,Object> map);
+
+
+    //获取合同收支明细
+    List<Map<String,Object>> selectContractExpnses(Map<String,Object> map);
+
+
+
 
 
 
