@@ -1,8 +1,6 @@
 package aq.controller.restful;
 
-import aq.common.access.AbsAccessUser;
-import aq.common.access.Factory;
-import aq.common.access.PermissionType;
+
 import aq.common.annotation.Permission;
 import aq.common.other.Rtn;
 import aq.common.util.FileUpload;
@@ -10,7 +8,6 @@ import aq.common.util.HttpUtil;
 import aq.common.util.StringUtil;
 import aq.service.system.Func;
 import aq.service.system.SystemService;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.util.Map;
 
@@ -87,12 +86,37 @@ public class System extends Base {
         MultipartFile haedImg = multipartRequest.getFile("avatar");
         FileUpload fileUpload = new FileUpload();
         String suffix = haedImg.getOriginalFilename().substring(haedImg.getOriginalFilename().lastIndexOf(".") + 1);
-        String url = fileUpload.upload(haedImg, "/depot/head", request);
+        String url = fileUpload.upload(haedImg, "/head", request);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("size",haedImg.getSize());
         jsonObject.addProperty("extend",suffix);
         jsonObject.addProperty("url",url);
         writerJson(response,out,systemService.uploadImg(jsonObject));
+    }
+
+    //读取资源文件
+    @RequestMapping(value = "/getReasourse/{file}",method = RequestMethod.GET)
+    public void getReasourse(@PathVariable(value = "file") String img, HttpServletRequest request, HttpServletResponse response){
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/x-img");
+        FileUpload fileUpload = new FileUpload();
+        String suffix = request.getPathInfo().split(img)[1];
+        if (StringUtil.isEmpty(suffix)) return;
+        try {
+            FileInputStream writeInput = fileUpload.write("/head/" + img + suffix);
+            ServletOutputStream out = response.getOutputStream();
+            int b = 0;
+            byte[] buffer = new byte[1024];
+            while ((b = writeInput.read(buffer)) != -1) {
+                // 4.写到输出流(out)中
+                out.write(buffer, 0, b);
+            }
+            writeInput.close();
+            out.flush();
+            out.close();
+        }catch (Exception ex) {
+            return;
+        }
     }
 
 }
