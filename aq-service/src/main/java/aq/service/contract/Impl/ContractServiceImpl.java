@@ -68,8 +68,14 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("income", res.get("income").equals("")? "0" :res.get("income"));
         res.put("tax", res.get("tax").equals("")? "0" :res.get("tax"));
         res.put("taxlimit", res.get("taxlimit").equals("")? "0" :res.get("taxlimit"));
-        res.put("signTime", DateTime.compareDate(res.get("signTime").toString()));
-        res.put("expireTime", DateTime.compareDate(res.get("expireTime").toString()));
+        try {
+            Date signTime = new SimpleDateFormat("yyyy-MM-dd").parse(res.get("signTime").toString());
+            Date expireTime = new SimpleDateFormat("yyyy-MM-dd").parse(res.get("expireTime").toString());
+            res.put("signTime", signTime);
+            res.put("expireTime", expireTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         res.put("currency", res.get("currency"));
         res.put("remarks1", res.get("reamrks1"));
         res.put("status", "BG");
@@ -112,8 +118,14 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         if(res.get("income") != null) res.put("income", res.get("income").equals("")? "0" :res.get("income"));
         res.put("tax", res.get("tax").equals("")? "0" :res.get("tax"));
         res.put("taxlimit", res.get("taxlimit").equals("")? "0" :res.get("taxlimit"));
-        res.put("signTime", DateTime.compareDate(res.get("signTime").toString()));
-        res.put("expireTime", DateTime.compareDate(res.get("expireTime").toString()));
+        try {
+            Date signTime = new SimpleDateFormat("yyyy-MM-dd").parse(res.get("signTime").toString());
+            Date expireTime = new SimpleDateFormat("yyyy-MM-dd").parse(res.get("expireTime").toString());
+            res.put("signTime", signTime);
+            res.put("expireTime", expireTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         res.put("currency", res.get("currency"));
         res.put("reamrks1", res.get("reamrks1"));
         res.put("updateTime",new Date());
@@ -209,8 +221,8 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("id",res.get("id"));
         List<Map<String, Object>> mapParent = contractDao.selectContracList(res);
         res.put("id",UUIDUtil.getUUID());
-        res.put("number",mapParent.get(0).get("number"));
-        res.put("parent",UUIDUtil.getRandomReqNumber());
+        res.put("number",UUIDUtil.getRandomReqNumber());
+        res.put("parent",mapParent.get(0).get("number"));
         res.put("title",mapParent.get(0).get("title"));
         res.put("customerKeyA",mapParent.get(0).get("customerKeyA"));
         res.put("customerKeyB", mapParent.get(0).get("customerKeyB"));
