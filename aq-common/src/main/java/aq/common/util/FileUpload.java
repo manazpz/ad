@@ -1,7 +1,6 @@
 package aq.common.util;
 
 import aq.common.constants.APPConstants;
-import com.sun.deploy.association.utility.AppConstants;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,9 +50,9 @@ public class FileUpload {
      * @param request
      * @throws Exception
      */
-    public String upload(MultipartFile file, String destDir, HttpServletRequest request) throws Exception {
+    public String upload(MultipartFile file,String name, String suffix, String destDir, HttpServletRequest request) throws Exception {
         try {
-            String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+            suffix = StringUtil.isEmpty(suffix)?file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1):suffix;
             if (file.getSize() > getAllowSize()) {
                 throw new Exception("您上传的文件大小已经超出范围");
             }
@@ -61,11 +60,11 @@ public class FileUpload {
             if (!destFile.exists()) {
                 destFile.mkdirs();
             }
-            String fileNameNew = getFileNameNew() + "." + suffix;
-            File f = new File(destFile.getAbsoluteFile() + "/" + fileNameNew);
+            String fileNameNew = "/" + (StringUtil.isEmpty(name)?getFileNameNew():name) + "." + suffix;
+            File f = new File(destFile.getAbsoluteFile() + fileNameNew);
             file.transferTo(f);
             f.createNewFile();
-            fileName = APPConstants.FILE_SERVICE_URL + "/" + destDir + "/" + fileNameNew;
+            fileName = APPConstants.FILE_SERVICE_URL + destDir + fileNameNew;
             return fileName;
         } catch (Exception e) {
             throw e;

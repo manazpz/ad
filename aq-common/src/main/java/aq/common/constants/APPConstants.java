@@ -10,7 +10,7 @@ public final class APPConstants {
 //    public static final String FILE_SERVICE_URL = "D:\\Work\\resource\\contract\\";
 
     //附件资源位置
-    public static final String FILE_SERVICE_PLACE = "../resouce/contract";
+    public static final String FILE_SERVICE_PLACE = "../../resouce/contract";
 //    public static final String FILE_SERVICE_PLACE = "D:\\Work\\resource\\contract";
 
 }

@@ -7,5 +7,5 @@ PID_FILE=schedule.pid
 
 
 
-SCHEDULE_OPTS="-server -Xmx512m -Xms512m"
+SCHEDULE_OPTS="-server -Xmx128m -Xms128m"
 SCHEDULE_DEBUG_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"

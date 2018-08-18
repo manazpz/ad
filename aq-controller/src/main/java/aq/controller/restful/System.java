@@ -86,12 +86,30 @@ public class System extends Base {
         MultipartFile haedImg = multipartRequest.getFile("avatar");
         FileUpload fileUpload = new FileUpload();
         String suffix = haedImg.getOriginalFilename().substring(haedImg.getOriginalFilename().lastIndexOf(".") + 1);
-        String url = fileUpload.upload(haedImg, "/head", request);
+        String url = fileUpload.upload(haedImg, "","","/head", request);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("size",haedImg.getSize());
         jsonObject.addProperty("extend",suffix);
         jsonObject.addProperty("url",url);
         writerJson(response,out,systemService.uploadImg(jsonObject));
+    }
+
+    //上传Logo
+    @RequestMapping(value = "/uploadLoge",method = RequestMethod.POST)
+    @ResponseBody
+    public void uploadLoge(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception {
+        Rtn rtn = new Rtn("User");
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        MultipartFile haedImg = multipartRequest.getFile("avatar");
+        FileUpload fileUpload = new FileUpload();
+        String suffix = haedImg.getOriginalFilename().substring(haedImg.getOriginalFilename().lastIndexOf(".") + 1);
+        String url = fileUpload.upload(haedImg, "favicon", "jpg","", request);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("logo", url);
+        rtn.setCode(200);
+        rtn.setMessage("success");
+        rtn.setData(jsonObject);
+        writerJson(response,out,Func.functionRtnToJsonObject.apply(rtn));
     }
 
     //读取资源文件
