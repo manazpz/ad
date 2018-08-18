@@ -229,7 +229,7 @@
             ZCN.FD_NUMBER AS num,
             SC. NAME AS cust,
             ZCN.FD_TITLE AS title,
-            ZCN.FD_INCOME AS income,
+            ZC.FD_INCOME AS income,
             ZC.FD_PROPORTIONS AS pro,
             DATE_FORMAT(
                 ZCN.FD_SIGN_TIME,
