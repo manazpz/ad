@@ -299,8 +299,10 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("reamrks1",res.get("reamrks1"));
         contractDao.insertContractExpenses(res);
         rest.put("id",res.get("id"));
+        rest.put("parentId",res.get("id"));
         List<Map<String, Object>> maprest = contractDao.selectContracList(rest);
         List<Map<String, Object>> mapPaetner = contractDao.selectContracPartner(rest);
+        List<Map<String, Object>> mapSub = contractDao.selectContracSub(rest);
         double amount = Double.parseDouble(res.get("amount").toString());
         if(maprest.size()>0 ){
             if("FK".equals(res.get("typePaye"))){
@@ -315,28 +317,34 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
                 double expenses = Double.parseDouble(maprest.get(0).get("expenses").toString());
                 double taxlimit = Double.parseDouble(maprest.get(0).get("taxlimit").toString());
                 rest.put("paid",df.format(paid+amount));
-                rest.put("income",df.format(paid/taxlimit-expenses));
-                rest.put("tax",df.format(paid/taxlimit));
+                rest.put("income",df.format((paid+amount) - (paid+amount)/taxlimit -expenses));
+                rest.put("tax",df.format((paid+amount)/taxlimit));
             }
             //修改母合同信息
             contractDao.updateContract(rest);
+            mapSub.forEach(p->{
+                rest.put("id",p.get("FD_SUB_ID"));
+                //修改子合同信息
+                contractDao.updateContract(rest);
+            });
         }
         rest.clear();
         Map<String, Object> finalRes = res;
         mapPaetner.forEach(p->{
             double pro = Double.parseDouble(p.get("pro").toString());
             double paid = Double.parseDouble(maprest.get(0).get("paid").toString());
+            double expenses = Double.parseDouble(maprest.get(0).get("expenses").toString());
             double taxlimit = Double.parseDouble(maprest.get(0).get("taxlimit").toString());
             if("FK".equals(finalRes.get("typePaye"))){
                 //已垫付金额
                 rest.put("income",df.format((paid-amount)/pro));
             }else{
                 //实收总金额
-                rest.put("income",df.format((paid/taxlimit-amount)/pro));
+                rest.put("income",df.format(((paid+amount) - (paid+amount)/taxlimit) /pro));
             }
             rest.put("no",p.get("no"));
             rest.put("id",finalRes.get("id"));
-            //修改子合同收益
+            //修改合伙人收益
             contractDao.updateContractPartner(rest);
         });
         rtn.setCode(200);
