@@ -93,6 +93,9 @@
         system_permission sp
         INNER JOIN administrator_permission ap ON sp.ID = ap.PERMISSION_ID
         WHERE ap.ADMINISTRATOR_ID = #{administratorId} AND sp.IS_ENABLE = 'Y'
+        <if test="type != null">
+            AND (sp.TYPE = #{type} or sp.MODULE = 'AM')
+        </if>
     </select>
 
     <!--获取密码-->

@@ -6,6 +6,7 @@ import aq.common.annotation.DyncDataSource;
 import aq.common.other.Rtn;
 import aq.common.util.GsonHelper;
 import aq.common.util.MD5;
+import aq.common.util.StringUtil;
 import aq.common.util.UUIDUtil;
 import aq.dao.customer.CustomerDao;
 import aq.dao.user.UserDao;
@@ -31,8 +32,6 @@ public class CustomerServiceImpl extends BaseServiceImpl  implements CustomerSer
 
     @Resource
     private CustomerDao customerDao;
-    @Resource
-    private UserDao userDao;
 
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
@@ -55,7 +54,7 @@ public class CustomerServiceImpl extends BaseServiceImpl  implements CustomerSer
             return Func.functionRtnToJsonObject.apply(rtn);
         }
         res.clear();
-        res.put("customerUser",jsonObject.get("customerUser").getAsString());
+        res.put("code",jsonObject.get("code").getAsString());
         List<Map<String, Object>> customers = customerDao.selectCustomerList(res);
         if(customers.size() > 0) {
             rtn.setCode(60001);
@@ -63,28 +62,14 @@ public class CustomerServiceImpl extends BaseServiceImpl  implements CustomerSer
             return Func.functionRtnToJsonObject.apply(rtn);
         }
         res.clear();
-        res.put("userName",jsonObject.get("customerUser").getAsString());
-        List<Map<String, Object>> users = userDao.selectUserInfo(res);
-        if(users.size() > 0) {
-            rtn.setCode(60002);
-            rtn.setMessage("已存在用户！");
-            return Func.functionRtnToJsonObject.apply(rtn);
-        }
-        res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         res.put("id",UUIDUtil.getUUID());
+        res.put("customerUser",jsonObject.get("code").getAsString());
         res.put("createUser",user.getUserId());
         res.put("lastCreateUser",user.getUserId());
         res.put("createTime",new Date());
         res.put("lastCreateTime",new Date());
         customerDao.insertCustomer(res);
-        res.put("nickName",res.get("customerName"));
-        res.put("userName",res.get("customerUser"));
-        res.put("password", MD5.getMD5String("123456"));
-        res.put("phone", res.get("code"));
-        res.put("status", res.get("type"));
-        res.put("updateTime",new Date());
-        userDao.insertUserInfo(res);
         rtn.setCode(200);
         rtn.setMessage("success");
         return Func.functionRtnToJsonObject.apply(rtn);
@@ -103,15 +88,13 @@ public class CustomerServiceImpl extends BaseServiceImpl  implements CustomerSer
         }
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        if(!StringUtil.isEmpty(jsonObject.get("code"))) {
+            res.put("customerUser",jsonObject.get("code").getAsString());
+        }
         res.put("id",res.get("customerId"));
         res.put("lastCreateUser",user.getUserId());
         res.put("lastCreateTime",new Date());
         customerDao.updateCustomer(res);
-        res.put("nickName",res.get("customerName"));
-        res.put("phone", res.get("code"));
-        res.put("status", res.get("type"));
-        res.put("updateTime",new Date());
-        userDao.updateUserInfo(res);
         rtn.setCode(200);
         rtn.setMessage("success");
         return Func.functionRtnToJsonObject.apply(rtn);

@@ -42,9 +42,6 @@
         <if test="customerId != null">
             AND ZCM.FD_ID = #{customerId}
         </if>
-        <if test="customerUser != null">
-            AND ZCM.FD_USER = #{customerUser}
-        </if>
         <if test="customerName != null and customerName != ''">
             AND ZCM.FD_NAME LIKE CONCAT('%', #{customerName}, '%')
         </if>
@@ -76,8 +73,8 @@
             <if test="customerName!=null and customerName != ''">
                 ZCM.FD_NAME = #{customerName},
             </if>
-            <if test="type!=null and type != ''">
-                ZCM.FD_TYPE = #{type},
+            <if test="typeKey!=null and typeKey != ''">
+                ZCM.FD_TYPE = #{typeKey},
             </if>
             <if test="sex!=null and sex != ''">
                 ZCM.FD_SEX = #{sex},

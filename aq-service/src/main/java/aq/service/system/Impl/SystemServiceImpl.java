@@ -128,6 +128,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
     public JsonObject queryUserInfo(JsonObject jsonObject) {
         Rtn rtn = new Rtn("System");
         JsonObject data = new JsonObject();
+        List roles = new ArrayList();
         Map map = new HashMap();
         map.clear();
         map = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
@@ -136,9 +137,20 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
             rtn.setCode(60003);
             rtn.setMessage("当前登录者不存在!");
         }else {
+            Map<String, Object> userMap = users.get(0);
+            map.clear();
+            map.put("administratorId",userMap.get("id"));
+            map.put("type","MENU");
+            List<Map> list = sysDao.selectSysPermissionUser(map);
+            list.forEach(obj->{
+                if(!StringUtil.isEmpty(obj.get("module"))) {
+                    roles.add(obj.get("module").toString());
+                }
+            });
+            userMap.put("roles",roles);
             rtn.setCode(200);
             rtn.setMessage("success");
-            data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(users.get(0))).getAsJsonObject();
+            data =  GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(userMap)).getAsJsonObject();
         }
         rtn.setData(data);
         return Func.functionRtnToJsonObject.apply(rtn);
