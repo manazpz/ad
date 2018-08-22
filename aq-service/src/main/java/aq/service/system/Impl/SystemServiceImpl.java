@@ -295,7 +295,7 @@ public class SystemServiceImpl extends BaseServiceImpl  implements SystemService
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject uploadImg(JsonObject jsonObject) {
-        Rtn rtn = new Rtn("User");
+        Rtn rtn = new Rtn("System");
         AbsAccessUser user = Factory.getContext().user();
         Map map = new HashMap();
         JsonObject data = new JsonObject();

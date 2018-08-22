@@ -25,7 +25,7 @@
         #{signTime,jdbcType=TIMESTAMP},
         #{expireTime,jdbcType=TIMESTAMP},
         #{remarks1},
-        #{remarks2},
+        #{type},
         #{del},
         #{createUser},
         #{lastCreateUser},
@@ -96,6 +96,12 @@
         </if>
         <if test="statusKey != null and statusKey != ''">
             AND ZG.FD_STATUS = #{statusKey}
+        </if>
+        <if test="types != null and types != ''">
+            AND ZG.FD_TYPE = #{types}
+        </if>
+        <if test="term != null and term != ''">
+            AND ZG.FD_CUSTOMER_A = #{term} OR  ZG.FD_CUSTOMER_B = #{term}
         </if>
         ORDER BY ZG.FD_STATUS ASC
         <if test="sort != null">
@@ -218,6 +224,7 @@
 	        ZDEV_CONTRACT_EXPENSES ZC
         WHERE 1=1
             AND ZC.FD_ID = #{id}
+            ORDER BY ZC.CREATE_TIME ASC
     </select>
 
 
@@ -250,6 +257,7 @@
         LEFT JOIN system_config SCS ON SCS.KEY_WORD = ZCN.FD_STATUS
         AND SCS.TYPE = 'CONTRACT'
         WHERE 1=1 AND ZC.FD_ID = #{id}
+        ORDER BY ZC.CREATE_TIME ASC
     </select>
 
 
@@ -329,6 +337,7 @@
                 WHERE
                     ZCR.FD_ID = #{id}
             )
+            ORDER BY ZG.CREATE_TIME ASC
     </select>
 
 
@@ -380,6 +389,6 @@
         LEFT JOIN system_config SC ON SC.KEY_WORD = ZC.FD_TYPE
         AND SC.TYPE = 'TYPEPAY'
         WHERE 1=1 AND ZC.FD_ID = #{id}
+        ORDER BY ZC.CREATE_TIME ASC
     </select>
-
 </mapper>

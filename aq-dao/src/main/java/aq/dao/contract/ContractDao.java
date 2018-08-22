@@ -49,6 +49,11 @@ public interface ContractDao {
     //获取合同收支明细
     List<Map<String,Object>> selectContractExpnses(Map<String,Object> map);
 
+    //新增附件
+    int insertAttachment(Map<String,Object> map);
+
+    //获取合同附件
+    List<Map<String,Object>> selectContractAttaList(Map<String,Object> map);
 
 
 

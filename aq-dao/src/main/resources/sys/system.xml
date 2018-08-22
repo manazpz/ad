@@ -143,7 +143,33 @@
     <!--插入附件-->
     <insert id="insertAttachment" >
         INSERT INTO system_attachment
-        VALUES(#{id},#{type},#{refId},#{url},#{extend},#{size},#{createUser},#{lastCreateUser},#{createTime,jdbcType=TIMESTAMP}
+        VALUES(#{id},#{type},#{refId},#{name},#{url},#{extend},#{size},#{createUser},#{lastCreateUser},#{createTime,jdbcType=TIMESTAMP}
         ,#{lastCreateTime,jdbcType=TIMESTAMP},#{remarks})
     </insert>
+
+    <!--查询合同附件信息-->
+    <select id="selectContractAttaList" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        ZC.ID AS id,
+        SC. NAME AS type,
+        ZC.FD_NAME AS name,
+        ZC.FD_REF_ID AS refId,
+        ZC.FD_URL AS url,
+        ZC.FD_EXTEND AS extend,
+        ZC.FD_SIZE AS sizes,
+        ZC.REMARKS AS remark,
+        DATE_FORMAT(ZC.CREATE_TIME, '%Y-%m-%d') AS creattime,
+        DATE_FORMAT(
+        ZC.LAST_CREATE_TIME,
+        '%Y-%m-%d'
+        ) AS lastcreattime
+        FROM
+        system_attachment ZC
+        LEFT JOIN system_config SC ON SC.KEY_WORD = ZC.FD_TYPE
+        AND SC.TYPE = 'ATTATYPE'
+        WHERE
+        1 = 1
+        AND ZC.FD_REF_ID = #{id}
+        ORDER BY ZC.CREATE_TIME ASC
+    </select>
 </mapper>

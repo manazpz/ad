@@ -103,6 +103,7 @@ public class RequestFilter extends aq.common.interceptor.RequestFilter {
                     }
                     if(flag){
                         isAccessed = true;
+                        request.setAttribute("flag","admin");
                     }else {
                         if (permissionCollection.containAny(permission.value()) == false){
                             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission check failed");

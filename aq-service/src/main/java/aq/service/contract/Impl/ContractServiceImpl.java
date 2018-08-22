@@ -6,6 +6,7 @@ import aq.common.annotation.DyncDataSource;
 import aq.common.other.Rtn;
 import aq.common.util.*;
 import aq.dao.contract.ContractDao;
+import aq.dao.system.SystemDao;
 import aq.service.base.Impl.BaseServiceImpl;
 import aq.service.contract.ContractService;
 import aq.service.system.Func;
@@ -33,11 +34,18 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     @Resource
     private ContractDao contractDao;
 
+    @Resource
+    private SystemDao sysDao;
+
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryContractList(JsonObject jsonObject) {
+        AbsAccessUser user = Factory.getContext().user();
         jsonObject.addProperty("service","Contract");
         return query(jsonObject,(map)->{
+            if(map.get("flag")== null){
+                map.put("term",user.getUserId());
+            }
             return contractDao.selectContracList(map);
         });
     }
@@ -58,6 +66,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("id",UUIDUtil.getUUID());
         res.put("number",UUIDUtil.getRandomReqNumber());
         res.put("title",res.get("title"));
+        res.put("type",res.get("contractType"));
         res.put("customerKeyA",res.get("customerKeyA"));
         res.put("customerKeyB", res.get("customerKeyB"));
         res.put("money", res.get("money").equals("") ?"0" :res.get("money"));
@@ -298,6 +307,29 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("lastCreateTime",new Date());
         res.put("reamrks1",res.get("reamrks1"));
         contractDao.insertContractExpenses(res);
+        if(res.get("file") != null ){
+            List<Map<String, Object>> mapfile = (List<Map<String, Object>>) res.get("file");
+            List<Map<String, Object>> mapsize = (List<Map<String, Object>>) res.get("size");
+            List<Map<String, Object>> mapsuffix = (List<Map<String, Object>>) res.get("suffix");
+            List<Map<String, Object>> mapname = (List<Map<String, Object>>) res.get("name");
+            Map<String, Object> finalRes1 = res;
+            for(int i = 0; i < mapfile.size(); i++){
+                rest.put("id",UUIDUtil.getUUID());
+                rest.put("type",finalRes1.get("types"));
+                rest.put("refId",finalRes1.get("id"));
+                rest.put("name",mapname.get(i));
+                rest.put("size",mapsize.get(i));
+                rest.put("extend",mapsuffix.get(i));
+                rest.put("url",mapfile.get(i));
+                rest.put("createUser",user.getUserId());
+                rest.put("lastCreateUser",user.getUserId());
+                rest.put("createTime",new Date());
+                rest.put("lastCreateTime",new Date());
+                //插入附件表
+                sysDao.insertAttachment(rest);
+            }
+        }
+        rest.clear();
         rest.put("id",res.get("id"));
         rest.put("parentId",res.get("id"));
         List<Map<String, Object>> maprest = contractDao.selectContracList(rest);
@@ -360,6 +392,16 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         jsonObject.addProperty("service","Contract");
         return query(jsonObject,(map)->{
             return contractDao.selectContractExpnses(map);
+        });
+    }
+
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
+    @Override
+    public JsonObject queryContractAttaList(JsonObject jsonObject) {
+        jsonObject.addProperty("service","Contract");
+        return query(jsonObject,(map)->{
+            return sysDao.selectContractAttaList(map);
         });
     }
 }

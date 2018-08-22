@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileInputStream;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -45,14 +46,15 @@ public class FileUpload {
 
     /**
      * 单文件上传
+     *
      * @param file
      * @param destDir
      * @param request
      * @throws Exception
      */
-    public String upload(MultipartFile file,String name, String suffix, String destDir, HttpServletRequest request) throws Exception {
+    public String upload(MultipartFile file, String name, String suffix, String destDir, HttpServletRequest request) throws Exception {
         try {
-            suffix = StringUtil.isEmpty(suffix)?file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1):suffix;
+            suffix = StringUtil.isEmpty(suffix) ? file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1) : suffix;
             if (file.getSize() > getAllowSize()) {
                 throw new Exception("您上传的文件大小已经超出范围");
             }
@@ -60,7 +62,7 @@ public class FileUpload {
             if (!destFile.exists()) {
                 destFile.mkdirs();
             }
-            String fileNameNew = "/" + (StringUtil.isEmpty(name)?getFileNameNew():name) + "." + suffix;
+            String fileNameNew = "/" + (StringUtil.isEmpty(name) ? getFileNameNew() : name) + "." + suffix;
             File f = new File(destFile.getAbsoluteFile() + fileNameNew);
             file.transferTo(f);
             f.createNewFile();
@@ -73,17 +75,18 @@ public class FileUpload {
 
     /**
      * 单文件读取
+     *
      * @throws Exception
      */
     public FileInputStream write(String url) throws Exception {
-        String path = APPConstants.FILE_SERVICE_PLACE+url;
+        String path = APPConstants.FILE_SERVICE_PLACE + url;
         path = path.replace("\\", "/");
         FileInputStream inputStream = null;
         try {
             File file = new File(path);
             inputStream = new FileInputStream(file);
             return inputStream;
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             inputStream.close();
             throw ex;
         }
@@ -91,6 +94,7 @@ public class FileUpload {
 
     /**
      * 多文件上传
+     *
      * @param files
      * @param destDir
      * @param request
@@ -105,7 +109,7 @@ public class FileUpload {
                 if (file.getSize() > getAllowSize()) {
                     throw new Exception("您上传的文件大小已经超出范围");
                 }
-                File destFile = new File(APPConstants.FILE_SERVICE_PLACE +  "/" + destDir);
+                File destFile = new File(APPConstants.FILE_SERVICE_PLACE + "/" + destDir);
                 if (!destFile.exists()) {
                     destFile.mkdirs();
                 }
@@ -121,4 +125,26 @@ public class FileUpload {
         }
     }
 
+    /**
+     * 计算文件大小
+     *
+     * @param file 文件length
+     * @return 文件大小
+     */
+    public static String FormetFileSize(Long fileLength) {
+        String fileSizeString = "";
+        DecimalFormat df = new DecimalFormat("#.00");
+        if (fileLength != null) {
+            if (fileLength < 1024) {
+                fileSizeString = df.format((double) fileLength) + "B";
+            } else if (fileLength < 1048576) {
+                fileSizeString = df.format((double) fileLength / 1024) + "K";
+            } else if (fileLength < 1073741824) {
+                fileSizeString = df.format((double) fileLength / 1048576) + "M";
+            } else {
+                fileSizeString = df.format((double) fileLength / 1073741824) + "G";
+            }
+        }
+        return fileSizeString;
+    }
 }

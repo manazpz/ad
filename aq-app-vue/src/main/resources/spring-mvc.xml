@@ -50,10 +50,13 @@
     <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
         <property name="messageConverters">
             <list>
+                <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
                 <bean class="aq.common.interceptor.HttpMessageConverter" />
             </list>
         </property>
     </bean>
+
+    <mvc:default-servlet-handler/>
 
     <!--设置文件上传的最大限制　5M-->
     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">

@@ -9,7 +9,7 @@ import com.google.gson.JsonObject;
  */
 public interface ContractService extends BaseService {
 
-    //查询商品
+    //查询合同列表
     JsonObject queryContractList(JsonObject jsonObject);
 
     //新增合同
@@ -38,6 +38,9 @@ public interface ContractService extends BaseService {
 
     //获取合作收支明细
     JsonObject queryContractExpnses(JsonObject jsonObject);
+
+    //查询合同附件列表
+    JsonObject queryContractAttaList(JsonObject jsonObject);
 
 
 
