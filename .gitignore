@@ -11,7 +11,7 @@ src/main/logs/*
 target/
 rebel.xml
 .idea/workspace.xml
-depot/
+dist/
 
 
 
