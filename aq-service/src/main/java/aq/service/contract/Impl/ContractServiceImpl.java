@@ -56,6 +56,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         AbsAccessUser user = Factory.getContext().user();
         Rtn rtn = new Rtn("Contract");
         Map<String,Object> res = new HashMap<>();
+        Map<String,Object> rest = new HashMap<>();
         if (user == null) {
             rtn.setCode(10000);
             rtn.setMessage("未登录！");
@@ -64,7 +65,14 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         res.put("id",UUIDUtil.getUUID());
-        res.put("number",UUIDUtil.getRandomReqNumber());
+        rest.put("number",res.get("contractType")+UUIDUtil.getRandomNo()+"01");
+        List<Map<String, Object>> maps = contractDao.selectContracList(rest);
+        if(maps.size()>0){
+            res.put("number",res.get("contractType")+UUIDUtil.getRandomNo()+"0"+ maps.size()+1);
+        }else{
+            res.put("number",res.get("contractType")+UUIDUtil.getRandomNo()+"01");
+        }
+        rest.clear();
         res.put("title",res.get("title"));
         res.put("type",res.get("contractType"));
         res.put("customerKeyA",res.get("customerKeyA"));
@@ -94,6 +102,17 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("createTime",new Date());
         res.put("lastCreateTime",new Date());
         contractDao.insertContract(res);
+        List<Map<String, Object>> mapgoods = (List<Map<String, Object>>) res.get("goods");
+        for(int i = 0; i < mapgoods.size(); i++){
+            rest.put("id",res.get("id"));
+            rest.put("no",i*10 +10);
+            rest.put("goods",mapgoods.get(i));
+            rest.put("createUser",user.getUserId());
+            rest.put("lastCreateUser",user.getUserId());
+            rest.put("createTime",new Date());
+            rest.put("lastCreateTime",new Date());
+            contractDao.insertGoods(rest);
+        }
         rtn.setCode(200);
         rtn.setMessage("success");
         return Func.functionRtnToJsonObject.apply(rtn);
@@ -230,7 +249,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("id",res.get("id"));
         List<Map<String, Object>> mapParent = contractDao.selectContracList(res);
         res.put("id",UUIDUtil.getUUID());
-        res.put("number",UUIDUtil.getRandomReqNumber());
+        res.put("number","Z"+ mapParent.get(0).get("number"));
         res.put("parent",mapParent.get(0).get("number"));
         res.put("title",mapParent.get(0).get("title"));
         res.put("customerKeyA",mapParent.get(0).get("customerKeyA"));
@@ -395,6 +414,14 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         });
     }
 
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
+    @Override
+    public JsonObject queryContractGoodList(JsonObject jsonObject) {
+        jsonObject.addProperty("service","Contract");
+        return query(jsonObject,(map)->{
+            return contractDao.selectContractGoodList(map);
+        });
+    }
 
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
@@ -404,4 +431,5 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             return sysDao.selectContractAttaList(map);
         });
     }
+
 }

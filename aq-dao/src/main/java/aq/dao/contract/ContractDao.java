@@ -14,6 +14,10 @@ public interface ContractDao {
     //新增合同
     int insertContract(Map<String,Object> map);
 
+    //新增合同
+    int insertGoods(Map<String,Object> map);
+
+
     //修改合同
     int updateContract(Map<String,Object> map);
 
@@ -52,8 +56,9 @@ public interface ContractDao {
     //新增附件
     int insertAttachment(Map<String,Object> map);
 
-    //获取合同附件
-    List<Map<String,Object>> selectContractAttaList(Map<String,Object> map);
+    //获取商品信息
+    List<Map<String,Object>> selectContractGoodList(Map<String,Object> map);
+
 
 
 

@@ -30,6 +30,15 @@ public class UUIDUtil {
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");//设置日期格式
         return df.format(new Date()).toString();// new Date()为获取当前系统时间，也可使用当前时间戳
     }
+
+    /**
+     * 功能：获取当前时间作为编号
+     * @return
+     */
+    public static String getRandomNo() {
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");//设置日期格式
+        return df.format(new Date()).toString();// new Date()为获取当前系统时间，也可使用当前时间戳
+    }
     /**
      * 获取随机的流水号(8位)
      * @return

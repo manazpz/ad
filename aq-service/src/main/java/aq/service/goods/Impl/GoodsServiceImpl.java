@@ -67,6 +67,7 @@ public class GoodsServiceImpl extends BaseServiceImpl  implements GoodsService {
         res.put("typeKey", res.get("typeKey"));
         res.put("unit", res.get("unit"));
         res.put("price", res.get("price"));
+        res.put("remarks", res.get("remarks"));
         res.put("status", res.get("status"));
         res.put("createUser",user.getUserId());
         res.put("lastCreateUser",user.getUserId());

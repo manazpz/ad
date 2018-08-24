@@ -45,5 +45,4 @@ public interface SystemDao {
 
     //查询附件明细
     List<Map<String,Object>> selectContractAttaList(Map<String,Object> map);
-
 }

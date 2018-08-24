@@ -39,6 +39,9 @@ public interface ContractService extends BaseService {
     //获取合作收支明细
     JsonObject queryContractExpnses(JsonObject jsonObject);
 
+    //获取合作收支明细
+    JsonObject queryContractGoodList(JsonObject jsonObject);
+
     //查询合同附件列表
     JsonObject queryContractAttaList(JsonObject jsonObject);
 

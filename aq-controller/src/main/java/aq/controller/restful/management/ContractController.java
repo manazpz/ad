@@ -127,6 +127,16 @@ public class ContractController extends aq.controller.restful.System {
         writerJson(response,out,contractService.queryContractExpnses(requestJson));
     }
 
+
+    //获取合同收支明细
+    @RequestMapping(value = "/contractGoodList",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"合同-查询"})
+    @ResponseBody
+    public void queryContractGoodList(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
+        writerJson(response,out,contractService.queryContractGoodList(requestJson));
+    }
+
+
     //上传附件
     @RequestMapping(value = "/uploadFile",method = RequestMethod.POST)
     @ResponseBody

@@ -34,6 +34,20 @@
     </insert>
 
 
+    <!--插入合同数据-->
+    <insert id="insertGoods" >
+        INSERT INTO ZDEV_CONTRACT_GOODS
+        VALUES(#{id},
+        #{no},
+        #{goods},
+        #{remarks},
+        #{createUser},
+        #{createTime,jdbcType=TIMESTAMP},
+        #{lastCreateUser},
+        #{lastCreateTime,jdbcType=TIMESTAMP})
+    </insert>
+
+
     <!--查询合同主数据-->
     <select id="selectContracList" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
@@ -42,9 +56,9 @@
             ZG.FD_PARENT AS parent,
             ZG.FD_TITLE AS title,
             ZG.FD_CUSTOMER_A AS customerKeyA,
-            CUSTOMER_A.NICK_NAME AS customer_a_Name,
+            ZCM_A.FD_NAME AS customer_a_Name,
             ZG.FD_CUSTOMER_B AS customerKeyB,
-            CUSTOMER_B.NICK_NAME AS customer_b_Name,
+            ZCM_B.FD_NAME AS customer_b_Name,
             ZG.FD_STATUS AS statusKey,
             SC. NAME AS statusName,
             ZG.FD_MONEY_INIT AS money_init,
@@ -79,14 +93,14 @@
             ZG.FD_STATUS AS STATUS,
             ZG.FD_REMARK1 AS reamrks1,
             ZG.FD_DELETE  AS del
-        FROM
+            FROM
             ZDEV_CONTRACT_MAIN ZG
-        LEFT JOIN system_config SC ON SC.KEY_WORD = ZG.FD_STATUS
-        AND SC.TYPE = 'CONTRACT'
-        LEFT JOIN system_administrator CUSTOMER_A ON CUSTOMER_A.ID = ZG.FD_CUSTOMER_A
-        LEFT JOIN system_administrator CUSTOMER_B ON CUSTOMER_B.ID = ZG.FD_CUSTOMER_B
-        LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZG.CREATE_USER
-        LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZG.LAST_CREATE_USER
+            LEFT JOIN system_config SC ON SC.KEY_WORD = ZG.FD_STATUS
+            AND SC.TYPE = 'CONTRACT'
+            LEFT JOIN ZDEV_CUSTOMER_MAIN ZCM_A ON ZCM_A.FD_ID = ZG.FD_CUSTOMER_A
+            LEFT JOIN ZDEV_CUSTOMER_MAIN ZCM_B ON ZCM_B.FD_ID = ZG.FD_CUSTOMER_B
+            LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZG.CREATE_USER
+            LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZG.LAST_CREATE_USER
         WHERE 1=1
         <if test="id != null">
             AND ZG.FD_ID = #{id}
@@ -286,9 +300,9 @@
             ZG.FD_PARENT AS parent,
             ZG.FD_TITLE AS title,
             ZG.FD_CUSTOMER_A AS customerKeyA,
-            CUSTOMER_A.NICK_NAME AS customer_a_Name,
+            ZCM_A.FD_NAME AS customer_a_Name,
             ZG.FD_CUSTOMER_B AS customerKeyB,
-            CUSTOMER_B.NICK_NAME AS customer_b_Name,
+            ZCM_B.FD_NAME AS customer_b_Name,
             ZG.FD_STATUS AS statusKey,
             SC. NAME AS statusName,
             ZG.FD_MONEY_INIT AS money_init,
@@ -324,8 +338,8 @@
             ZDEV_CONTRACT_MAIN ZG
         LEFT JOIN system_config SC ON SC.KEY_WORD = ZG.FD_STATUS
         AND SC.TYPE = 'CONTRACT'
-        LEFT JOIN system_administrator CUSTOMER_A ON CUSTOMER_A.ID = ZG.FD_CUSTOMER_A
-        LEFT JOIN system_administrator CUSTOMER_B ON CUSTOMER_B.ID = ZG.FD_CUSTOMER_B
+        LEFT JOIN ZDEV_CUSTOMER_MAIN ZCM_A ON ZCM_A.FD_ID = ZG.FD_CUSTOMER_A
+        LEFT JOIN ZDEV_CUSTOMER_MAIN ZCM_B ON ZCM_B.FD_ID = ZG.FD_CUSTOMER_B
         LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZG.CREATE_USER
         LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZG.LAST_CREATE_USER
         WHERE 1=1
@@ -340,6 +354,25 @@
             ORDER BY ZG.CREATE_TIME ASC
     </select>
 
+
+
+    <!--查询商品明细-->
+    <select id="selectContractGoodList" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+            ZGM.FD_CODE AS code,
+            ZGM.FD_NAME AS name,
+            SC. NAME AS types,
+            SCS. NAME AS unit,
+            ZGM.FD_PRICE AS price
+        FROM
+            ZDEV_CONTRACT_GOODS ZC
+        LEFT JOIN ZDEV_GOODS_MAIN ZGM ON ZGM.FD_ID = ZC.FD_GOODS
+        LEFT JOIN system_config SC ON SC.KEY_WORD = ZGM.FD_TYPE
+        LEFT JOIN system_config SCS ON SCS.KEY_WORD = ZGM.FD_UNIT
+        WHERE
+            1 = 1
+        AND ZC.FD_ID = #{id}
+    </select>
 
     <!--查询子合同明细-->
     <select id="selectContracSub" resultType="java.util.Map" parameterType="java.util.Map">
