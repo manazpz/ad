@@ -117,7 +117,7 @@
         <if test="term != null and term != ''">
             AND ZG.FD_CUSTOMER_A = #{term} OR  ZG.FD_CUSTOMER_B = #{term}
         </if>
-        ORDER BY ZG.FD_STATUS ASC
+        ORDER BY ZG.FD_STATUS , ZG.FD_SIGN_TIME DESC
         <if test="sort != null">
             ,#{sort}
         </if>
@@ -204,6 +204,7 @@
         VALUES(#{id},
         #{no},
         #{type},
+        #{costType},
         #{amount},
         #{payee},
         #{payer},
@@ -217,25 +218,28 @@
     <!--查询合同收支明细-->
     <select id="selectContracExpenses" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
-	        ZC.FD_ID AS id,
-	        ZC.FD_NO AS no,
-	        ZC.FD_TYPE AS type,
-	        ZC.FD_AMOUNT AS amount,
-	        ZC.FD_PAYEE AS payee,
-	        ZC.FD_PAYER AS payer,
-	        ZC.FD_REMARKS AS remarks1,
-	        ZC.CREATE_USER AS createUser,
-	        ZC.LAST_CREATE_USER AS lastCreateUser,
-	        DATE_FORMAT(
-            ZC.CREATE_TIME,
-            '%Y-%m-%d %H:%i:%S'
+            ZC.FD_ID AS id,
+            ZC.FD_NO AS NO,
+            ZC.FD_TYPE AS type,
+            SC. NAME AS costType,
+            ZC.FD_AMOUNT AS amount,
+            ZC.FD_PAYEE AS payee,
+            ZC.FD_PAYER AS payer,
+            ZC.FD_REMARKS AS remarks1,
+            ZC.CREATE_USER AS createUser,
+            ZC.LAST_CREATE_USER AS lastCreateUser,
+            DATE_FORMAT(
+                ZC.CREATE_TIME,
+                '%Y-%m-%d %H:%i:%S'
             ) AS createTime,
             DATE_FORMAT(
-            ZC.LAST_CREATE_TIME,
-            '%Y-%m-%d %H:%i:%S'
+                ZC.LAST_CREATE_TIME,
+                '%Y-%m-%d %H:%i:%S'
             ) AS lastCreateTime
         FROM
-	        ZDEV_CONTRACT_EXPENSES ZC
+            ZDEV_CONTRACT_EXPENSES ZC
+        LEFT JOIN system_config SC ON SC.KEY_WORD = ZC.FD_COSTTYPE
+        AND SC.TYPE = 'COSTTYPE'
         WHERE 1=1
             AND ZC.FD_ID = #{id}
             ORDER BY ZC.CREATE_TIME ASC
@@ -361,6 +365,7 @@
         SELECT
             ZGM.FD_CODE AS code,
             ZGM.FD_NAME AS name,
+            ZC.FD_GOODS AS goodsId,
             SC. NAME AS types,
             SCS. NAME AS unit,
             ZGM.FD_PRICE AS price
@@ -374,6 +379,11 @@
         AND ZC.FD_ID = #{id}
     </select>
 
+    <!--删除合同商品明细-->
+    <delete id="deleteContractGoodList" parameterType="java.util.Map">
+        delete from ZDEV_CONTRACT_GOODS where FD_ID = #{id}
+    </delete>
+
     <!--查询子合同明细-->
     <select id="selectContracSub" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
@@ -383,6 +393,8 @@
         WHERE 1=1
         AND ZC.FD_ID = #{parentId}
     </select>
+
+
 
 
     <!--插入父子子合同关系数据-->
@@ -411,16 +423,20 @@
     <select id="selectContractExpnses" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
             ZC.FD_AMOUNT AS amount,
-            SAS.NICK_NAME AS payee,
-            SBS.NICK_NAME AS payer,
+            ZCM_A.FD_NAME AS payee,
+            ZCM_B.FD_NAME AS payer,
             SC. NAME AS type,
+            SCS.NAME AS costType,
+            ZC.FD_REMARKS AS remarks1,
             DATE_FORMAT(ZC.CREATE_TIME, '%Y-%m-%d') AS creattime
         FROM
             ZDEV_CONTRACT_EXPENSES ZC
-        LEFT JOIN system_administrator SAS ON SAS.ID = ZC.FD_PAYEE
-        LEFT JOIN system_administrator SBS ON SBS.ID = ZC.FD_PAYER
+        LEFT JOIN ZDEV_CUSTOMER_MAIN ZCM_A ON ZCM_A.FD_ID = ZC.FD_PAYEE
+        LEFT JOIN ZDEV_CUSTOMER_MAIN ZCM_B ON ZCM_B.FD_ID = ZC.FD_PAYER
         LEFT JOIN system_config SC ON SC.KEY_WORD = ZC.FD_TYPE
         AND SC.TYPE = 'TYPEPAY'
+        LEFT JOIN system_config SCS ON SCS.KEY_WORD = ZC.FD_COSTTYPE
+        AND SCS.TYPE = 'COSTTYPE'
         WHERE 1=1 AND ZC.FD_ID = #{id}
         ORDER BY ZC.CREATE_TIME ASC
     </select>

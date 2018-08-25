@@ -6,6 +6,7 @@ import aq.common.annotation.DyncDataSource;
 import aq.common.other.Rtn;
 import aq.common.util.*;
 import aq.dao.contract.ContractDao;
+import aq.dao.goods.GoodsDao;
 import aq.dao.system.SystemDao;
 import aq.service.base.Impl.BaseServiceImpl;
 import aq.service.contract.ContractService;
@@ -19,10 +20,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by ywb on 2017-02-23.
@@ -35,18 +33,37 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     private ContractDao contractDao;
 
     @Resource
+    private GoodsDao goodsDao;
+
+    @Resource
     private SystemDao sysDao;
 
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryContractList(JsonObject jsonObject) {
         AbsAccessUser user = Factory.getContext().user();
+        Map<String,Object> res = new HashMap<>();
         jsonObject.addProperty("service","Contract");
         return query(jsonObject,(map)->{
             if(map.get("flag")== null){
                 map.put("term",user.getUserId());
             }
-            return contractDao.selectContracList(map);
+            List<Map<String, Object>> contractMaps = contractDao.selectContracList(map);
+            for(Map<String,Object> orderDetailMap :contractMaps) {
+                res.clear();
+                res.put("id",orderDetailMap.get("id"));
+                List goodsMaps = new ArrayList<>();
+                List goodsIdMaps = new ArrayList<>();
+                List<Map<String, Object>> maps = contractDao.selectContractGoodList(res);
+                for(int s = 0; s < maps.size(); s++){
+                    goodsMaps.add(maps.get(s).get("name"));
+                    goodsIdMaps.add(maps.get(s).get("goodsId"));
+                }
+                res.put("goods",goodsMaps);
+                res.put("goodsIds",goodsIdMaps);
+                orderDetailMap.putAll(res);
+            }
+            return contractMaps;
         });
     }
 
@@ -102,7 +119,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("createTime",new Date());
         res.put("lastCreateTime",new Date());
         contractDao.insertContract(res);
-        List<Map<String, Object>> mapgoods = (List<Map<String, Object>>) res.get("goods");
+        List<Map<String, Object>> mapgoods = (List<Map<String, Object>>) res.get("goodsIds");
         for(int i = 0; i < mapgoods.size(); i++){
             rest.put("id",res.get("id"));
             rest.put("no",i*10 +10);
@@ -125,6 +142,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         AbsAccessUser user = Factory.getContext().user();
         Rtn rtn = new Rtn("Contract");
         Map<String,Object> res = new HashMap<>();
+        Map<String,Object> rest = new HashMap<>();
         if (user == null) {
             rtn.setCode(10000);
             rtn.setMessage("未登录！");
@@ -158,6 +176,20 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("reamrks1", res.get("reamrks1"));
         res.put("updateTime",new Date());
         contractDao.updateContract(res);
+        List<Map<String, Object>> mapgoods = (List<Map<String, Object>>) res.get("goodsIds");
+        contractDao.deleteContractGoodList(res);
+        rest.put("id",res.get("id"));
+        for(int i = 0; i < mapgoods.size(); i++){
+            res.clear();
+            res.put("name",mapgoods.get(i));
+            rest.put("no",i*10 +10);
+            rest.put("goods",mapgoods.get(i));
+            rest.put("createUser",user.getUserId());
+            rest.put("lastCreateUser",user.getUserId());
+            rest.put("createTime",new Date());
+            rest.put("lastCreateTime",new Date());
+            contractDao.insertGoods(rest);
+        }
         rtn.setCode(200);
         rtn.setMessage("success");
         return Func.functionRtnToJsonObject.apply(rtn);
@@ -191,6 +223,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     @Override
     public JsonObject insertContractPartner(JsonObject jsonObject) {
         AbsAccessUser user = Factory.getContext().user();
+        DecimalFormat df = new DecimalFormat("#.00");
         Rtn rtn = new Rtn("Contract");
         Map<String,Object> res = new HashMap<>();
         if (user == null) {
@@ -209,9 +242,12 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         }
         res.put("user",res.get("user"));
         res.put("types",res.get("types"));
-        res.put("income",res.get("income"));
-        res.put("proportions",res.get("proportions"));
+        double income = Double.parseDouble(res.get("income").toString().replace(",", ""));
+        double proportions = Double.parseDouble(res.get("proportions").toString().replace(",", ""));
+        res.put("income",income*proportions/100);
+        res.put("proportions",proportions);
         res.put("remarks1", res.get("reamrks1"));
+        res.put("costType", res.get("costType"));
         res.put("createUser",user.getUserId());
         res.put("lastCreateUser",user.getUserId());
         res.put("createTime",new Date());
@@ -356,20 +392,20 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         List<Map<String, Object>> mapSub = contractDao.selectContracSub(rest);
         double amount = Double.parseDouble(res.get("amount").toString());
         if(maprest.size()>0 ){
+            //实收总金额
+            double paid = Double.parseDouble(maprest.get(0).get("paid").toString());
+            //支出总金额
+            double expenses = Double.parseDouble(maprest.get(0).get("expenses").toString());
+            //总税收
+            double tax = Double.parseDouble(maprest.get(0).get("tax").toString());
             if("FK".equals(res.get("typePaye"))){
-                //已垫付金额
-                double paid = Double.parseDouble(maprest.get(0).get("paid").toString());
-                double expenses = Double.parseDouble(maprest.get(0).get("expenses").toString());
                 rest.put("expenses",df.format(expenses+amount));
-                rest.put("income",df.format(paid-amount));
+                rest.put("income",df.format(paid-(expenses+amount)-tax));
             }else{
-                //实收总金额
-                double paid = Double.parseDouble(maprest.get(0).get("paid").toString());
-                double expenses = Double.parseDouble(maprest.get(0).get("expenses").toString());
                 double taxlimit = Double.parseDouble(maprest.get(0).get("taxlimit").toString());
                 rest.put("paid",df.format(paid+amount));
-                rest.put("income",df.format((paid+amount) - (paid+amount)/taxlimit -expenses));
-                rest.put("tax",df.format((paid+amount)/taxlimit));
+                rest.put("income",df.format((paid+amount) - (paid+amount)*taxlimit/100 -expenses));
+                rest.put("tax",df.format((paid+amount)*taxlimit/100));
             }
             //修改母合同信息
             contractDao.updateContract(rest);

@@ -10,7 +10,7 @@
         ,#{unitKey},#{price},'Y',#{createUser},#{lastCreateUser},#{createTime,jdbcType=TIMESTAMP},#{lastCreateTime,jdbcType=TIMESTAMP},#{remarks})
     </insert>
 
-    <!--查询客户主数据-->
+    <!--查询商品主数据-->
     <select id="selectGoodsList" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
             ZG.FD_ID AS goodsId,

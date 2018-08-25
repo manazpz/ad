@@ -60,6 +60,9 @@ public interface ContractDao {
     List<Map<String,Object>> selectContractGoodList(Map<String,Object> map);
 
 
+    //删除合同商品信息
+    int deleteContractGoodList(Map<String,Object> map);
+
 
 
 

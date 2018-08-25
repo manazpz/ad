@@ -128,7 +128,7 @@ public class ContractController extends aq.controller.restful.System {
     }
 
 
-    //获取合同收支明细
+    //获取合同商品明细
     @RequestMapping(value = "/contractGoodList",method = RequestMethod.POST)
     @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"合同-查询"})
     @ResponseBody
