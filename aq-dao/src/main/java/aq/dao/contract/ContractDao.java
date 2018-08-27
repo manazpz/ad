@@ -27,11 +27,17 @@ public interface ContractDao {
     //新增合同收支明细
     int insertContractExpenses(Map<String,Object> map);
 
+    //編輯合同收支明細
+    int updateContractExpenses(Map<String,Object> map);
+
     //获取收支明细数据
     List<Map<String,Object>> selectContracExpenses(Map<String,Object> map);
 
     //获取合同合伙人明细
     List<Map<String,Object>> selectContracPartner(Map<String,Object> map);
+
+    //删除合同合伙人明细
+    int deleteContractPartner(Map<String,Object> map);
 
     //新增合同合伙人明细
     int insertContractPartner(Map<String,Object> map);
@@ -46,9 +52,12 @@ public interface ContractDao {
     int insertContractSub(Map<String,Object> map);
 
 
-    //新增父子合同关系表
+    //修改父子合同关系表
     int updateContractPartner(Map<String,Object> map);
 
+
+    //删除父子合同关系表
+    int deleteContracExpenses(Map<String,Object> map);
 
     //获取合同收支明细
     List<Map<String,Object>> selectContractExpnses(Map<String,Object> map);

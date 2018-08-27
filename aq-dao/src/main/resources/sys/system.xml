@@ -147,6 +147,12 @@
         ,#{lastCreateTime,jdbcType=TIMESTAMP},#{remarks})
     </insert>
 
+
+    <!--删除附件-->
+    <delete id="deleteAtta"  parameterType="java.util.Map" >
+        DELETE FROM system_attachment WHERE ID = #{id}
+    </delete>
+
     <!--查询合同附件信息-->
     <select id="selectContractAttaList" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
@@ -169,6 +175,12 @@
         AND SC.TYPE = 'ATTATYPE'
         WHERE
         1 = 1
+        <if test="type!=null and type != ''">
+            AND ZC.FD_TYPE = #{type}
+        </if>
+        <if test="no!=null and no != ''">
+            AND ZC.REMARKS = #{no}
+        </if>
         AND ZC.FD_REF_ID = #{id}
         ORDER BY ZC.CREATE_TIME ASC
     </select>

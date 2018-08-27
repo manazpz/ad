@@ -84,6 +84,22 @@ public class ContractController extends aq.controller.restful.System {
         writerJson(response,out,contractService.queryContractPartner(requestJson));
     }
 
+    //删除合同合作伙伴
+    @RequestMapping(value = "/deletePartner",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B8DD880DD"},name = {"合同-删除"})
+    @ResponseBody
+    public void deleteContractPartner(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
+        writerJson(response,out,contractService.deleteContractPartner(requestJson));
+    }
+
+    //修改合同合作伙伴
+    @RequestMapping(value = "/updatePartner",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B8DD880DA"},name = {"合同-更新"})
+    @ResponseBody
+    public void updatePartner(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
+        writerJson(response,out,contractService.updateContractPartner(requestJson));
+    }
+
     //新增合同合作伙伴明细
     @RequestMapping(value = "/insertPartner",method = RequestMethod.POST)
     @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B6DD890DC"},name = {"合同-新增"})
@@ -101,16 +117,6 @@ public class ContractController extends aq.controller.restful.System {
         writerJson(response,out,contractService.queryContractSubtList(jsonObject));
     }
 
-    //新增子合同合
-    @RequestMapping(value = "/insertSub",method = RequestMethod.POST)
-    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B6DD890DC"},name = {"合同-新增"})
-    @ResponseBody
-    public void  createContractSub(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
-        JsonObject jsonObject = HttpUtil.getParameterMap(request);
-        writerJson(response,out,contractService.insertContractSub(jsonObject));
-    }
-
-
     //新增合同收支明细
     @RequestMapping(value = "/insertExpnses",method = RequestMethod.POST)
     @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B6DD890DC"},name = {"合同-新增"})
@@ -120,11 +126,30 @@ public class ContractController extends aq.controller.restful.System {
     }
 
     //获取合同收支明细
-    @RequestMapping(value = "/queryExpnses",method = RequestMethod.POST)
+    @RequestMapping(value = "/queryExpnses",method = RequestMethod.GET)
     @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"合同-查询"})
     @ResponseBody
-    public void queryContractExpnses(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
-        writerJson(response,out,contractService.queryContractExpnses(requestJson));
+    public void queryContractExpnses(HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        writerJson(response,out,contractService.queryContractExpnses(jsonObject));
+    }
+
+
+    //修改合同收支明细
+    @RequestMapping(value = "/updateExpnss",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B8DD880DA"},name = {"合同-更新"})
+    @ResponseBody
+    public void updateExpnss(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,contractService.updateContractExpnses(requestJson));
+    }
+
+
+    //删除合同收支明细
+    @RequestMapping(value = "/deletePay",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B8DD880DD"},name = {"合同-删除"})
+    @ResponseBody
+    public void deletePay(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,contractService.deleteContractExpnses(requestJson));
     }
 
 
@@ -147,7 +172,7 @@ public class ContractController extends aq.controller.restful.System {
         FileUpload fileUpload = new FileUpload();
         String suffix = haedImg.getOriginalFilename().substring(haedImg.getOriginalFilename().lastIndexOf(".") + 1) ;
         String name = haedImg.getOriginalFilename().substring(0,haedImg.getOriginalFilename().lastIndexOf(".") );
-        String url = fileUpload.upload(haedImg, name, suffix,"/contract", request);
+        String url = fileUpload.upload(haedImg, "", suffix,"", request);
         String size = FileUpload.FormetFileSize(haedImg.getSize());
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("url", url);
@@ -176,6 +201,15 @@ public class ContractController extends aq.controller.restful.System {
         rtn.setCode(200);
         rtn.setMessage("success");
         writerJson(response,out, Func.functionRtnToJsonObject.apply(rtn));
+    }
+
+
+    //删除附件
+    @RequestMapping(value = "/deleteAtta",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B8DD880DD"},name = {"合同-删除"})
+    @ResponseBody
+    public void deleteAtta(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,contractService.deleteAtta(requestJson));
     }
 
     //获取合同附件列表

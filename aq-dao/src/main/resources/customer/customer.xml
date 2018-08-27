@@ -39,6 +39,7 @@
         LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZCM.CREATE_USER
         LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZCM.LAST_CREATE_USER
         WHERE 1=1
+        AND ZCM.IS_VALID = 'Y'
         <if test="customerId != null">
             AND ZCM.FD_ID = #{customerId}
         </if>

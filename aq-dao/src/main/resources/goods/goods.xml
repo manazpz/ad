@@ -45,6 +45,7 @@
         LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZG.CREATE_USER
         LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZG.LAST_CREATE_USER
         WHERE 1=1
+        AND ZG.FD_STATUS = 'Y'
         <if test="goodsId != null">
             AND ZG.FD_ID = #{goodsId}
         </if>

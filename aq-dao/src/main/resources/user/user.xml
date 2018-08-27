@@ -35,6 +35,7 @@
         LEFT JOIN system_token st on sa.ID = st.ADMINISTRATOR_ID
         LEFT JOIN system_attachment sat ON sat.ID = sa.HEAD_PORTRAIT
         WHERE 1=1
+        AND sa.IS_VALID = 'Y'
         <if test="id != null">
             AND sa.ID = #{id}
         </if>

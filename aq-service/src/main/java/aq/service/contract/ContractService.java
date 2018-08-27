@@ -24,6 +24,12 @@ public interface ContractService extends BaseService {
     //获取合作伙伴明细
     JsonObject queryContractPartner(JsonObject jsonObject);
 
+    //删除合作伙伴明细
+    JsonObject deleteContractPartner(JsonObject jsonObject);
+
+    //更新合作伙伴明细
+    JsonObject updateContractPartner(JsonObject jsonObject);
+
     //新增合同合作伙伴明细
     JsonObject insertContractPartner(JsonObject jsonObject);
 
@@ -31,19 +37,25 @@ public interface ContractService extends BaseService {
     JsonObject queryContractSubtList(JsonObject jsonObject);
 
     //新增合同
-    JsonObject insertContractSub(JsonObject jsonObject);
-
-    //新增合同
     JsonObject insertContractExpnses(JsonObject jsonObject);
 
-    //获取合作收支明细
+    //获取合同收支明细
     JsonObject queryContractExpnses(JsonObject jsonObject);
+
+    //修改合同收支明细
+    JsonObject updateContractExpnses(JsonObject jsonObject);
+
+    //修改合同收支明细
+    JsonObject deleteContractExpnses(JsonObject jsonObject);
 
     //获取合作收支明细
     JsonObject queryContractGoodList(JsonObject jsonObject);
 
     //查询合同附件列表
     JsonObject queryContractAttaList(JsonObject jsonObject);
+
+    //刪除附件
+    JsonObject deleteAtta(JsonObject jsonObject);
 
 
 

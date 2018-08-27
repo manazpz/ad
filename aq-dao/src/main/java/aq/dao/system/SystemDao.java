@@ -43,6 +43,9 @@ public interface SystemDao {
     //插入附件
     int insertAttachment(Map<String,Object> map);
 
+    //删除附件
+    int deleteAtta(Map<String,Object> map);
+
     //查询附件明细
     List<Map<String,Object>> selectContractAttaList(Map<String,Object> map);
 }

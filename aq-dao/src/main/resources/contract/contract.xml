@@ -111,12 +111,16 @@
         <if test="statusKey != null and statusKey != ''">
             AND ZG.FD_STATUS = #{statusKey}
         </if>
+        <if test="parent != null and parent != ''">
+            AND ZG.FD_PARENT = #{parent}
+        </if>
         <if test="types != null and types != ''">
             AND ZG.FD_TYPE = #{types}
         </if>
         <if test="term != null and term != ''">
             AND ZG.FD_CUSTOMER_A = #{term} OR  ZG.FD_CUSTOMER_B = #{term}
         </if>
+        AND ZG.FD_DELETE != 'Y'
         ORDER BY ZG.FD_STATUS , ZG.FD_SIGN_TIME DESC
         <if test="sort != null">
             ,#{sort}
@@ -183,7 +187,7 @@
                 ZG.LAST_CREATE_TIME = #{lastCreateTime,jdbcType=TIMESTAMP},
             </if>
         </trim>
-        WHERE ZG.FD_ID = #{id}
+        WHERE 1=1  AND ZG.FD_ID = #{id}
     </update>
 
     <!--删除/恢复合同信息-->
@@ -203,7 +207,7 @@
         INSERT INTO ZDEV_CONTRACT_EXPENSES
         VALUES(#{id},
         #{no},
-        #{type},
+        #{typePayes},
         #{costType},
         #{amount},
         #{payee},
@@ -220,7 +224,7 @@
         SELECT
             ZC.FD_ID AS id,
             ZC.FD_NO AS NO,
-            ZC.FD_TYPE AS type,
+            ZC.FD_TYPE AS typePayes,
             SC. NAME AS costType,
             ZC.FD_AMOUNT AS amount,
             ZC.FD_PAYEE AS payee,
@@ -242,6 +246,9 @@
         AND SC.TYPE = 'COSTTYPE'
         WHERE 1=1
             AND ZC.FD_ID = #{id}
+            <if test="no!=null and no != ''">
+               AND ZC.FD_NO = #{no}
+            </if>
             ORDER BY ZC.CREATE_TIME ASC
     </select>
 
@@ -249,9 +256,12 @@
     <!--查询合同合作伙伴数明细-->
     <select id="selectContracPartner" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
+            ZC.FD_ID AS id,
             ZC.FD_NO AS no,
+            ZC.FD_USER AS user,
             ZCM.FD_NAME AS name,
             ZCN.FD_NUMBER AS num,
+            ZCN.FD_INCOME AS mainincome,
             SC. NAME AS cust,
             ZCN.FD_TITLE AS title,
             ZC.FD_INCOME AS income,
@@ -298,17 +308,22 @@
 
     <!--查询子合同明细-->
     <select id="selectContractSubList" resultType="java.util.Map" parameterType="java.util.Map">
-        SELECT
+      SELECT
             ZG.FD_ID AS id,
             ZG.FD_NUMBER AS number,
             ZG.FD_PARENT AS parent,
             ZG.FD_TITLE AS title,
+            ZGM.FD_ID AS goodsIds,
+            ZGM.FD_NAME AS goods,
             ZG.FD_CUSTOMER_A AS customerKeyA,
             ZCM_A.FD_NAME AS customer_a_Name,
             ZG.FD_CUSTOMER_B AS customerKeyB,
             ZCM_B.FD_NAME AS customer_b_Name,
             ZG.FD_STATUS AS statusKey,
             SC. NAME AS statusName,
+            GROUP_CONCAT(SA.FD_NAME) AS attaname,
+            GROUP_CONCAT(SA.FD_URL) AS url,
+            GROUP_CONCAT(SA.FD_EXTEND) AS extend,
             ZG.FD_MONEY_INIT AS money_init,
             ZG.FD_MONEY AS money,
             ZG.FD_PAID AS paid,
@@ -346,16 +361,24 @@
         LEFT JOIN ZDEV_CUSTOMER_MAIN ZCM_B ON ZCM_B.FD_ID = ZG.FD_CUSTOMER_B
         LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZG.CREATE_USER
         LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZG.LAST_CREATE_USER
-        WHERE 1=1
-            AND ZG.FD_ID = (
-                SELECT
-                    ZCR.FD_SUB_ID
-                FROM
-                    ZDEV_CONTRACT_RELATION ZCR
-                WHERE
-                    ZCR.FD_ID = #{id}
-            )
-            ORDER BY ZG.CREATE_TIME ASC
+        LEFT JOIN system_attachment SA ON SA.FD_REF_ID = ZG.FD_ID
+        LEFT JOIN	ZDEV_CONTRACT_GOODS ZCG ON ZCG.FD_ID = ZG.FD_ID
+				LEFT JOIN ZDEV_GOODS_MAIN ZGM ON ZGM.FD_ID =ZCG.FD_GOODS
+        WHERE
+            1 = 1
+        AND SA.FD_TYPE = #{type}
+        AND ZG.FD_ID IN (
+            SELECT
+                ZCR.FD_SUB_ID
+            FROM
+                ZDEV_CONTRACT_RELATION ZCR
+            WHERE
+                ZCR.FD_ID = #{id}
+        )
+        GROUP BY
+            ZG.FD_NUMBER
+        ORDER BY
+            ZG.CREATE_TIME ASC
     </select>
 
 
@@ -391,7 +414,13 @@
         FROM
         ZDEV_CONTRACT_RELATION ZC
         WHERE 1=1
-        AND ZC.FD_ID = #{parentId}
+        <if test="subId!=null and subId != ''">
+            AND ZC.FD_SUB_ID = #{subId}
+        </if>
+        <if test="parentId!=null and parentId != ''">
+            AND ZC.FD_ID = #{parentId}
+        </if>
+
     </select>
 
 
@@ -414,19 +443,31 @@
             <if test="income!=null and income != ''">
                 ZG.FD_INCOME = #{income},
             </if>
+            <if test="user!=null and user != ''">
+                ZG.FD_USER = #{user},
+            </if>
+            <if test="pro!=null and pro != ''">
+                ZG.FD_PROPORTIONS = #{pro},
+            </if>
         </trim>
-        WHERE ZG.FD_ID = #{id} AND  ZG.FD_NO =  #{no}
+        WHERE ZG.FD_ID = #{id} AND  ZG.FD_NO = #{no}
     </update>
 
 
-    <!--查询合同合作伙伴数明细-->
+    <!--查询合同收支明细-->
     <select id="selectContractExpnses" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
+            ZC.FD_ID AS id,
+            ZC.FD_NO AS no,
             ZC.FD_AMOUNT AS amount,
             ZCM_A.FD_NAME AS payee,
+            ZCM_A.FD_ID AS payeeId,
             ZCM_B.FD_NAME AS payer,
-            SC. NAME AS type,
-            SCS.NAME AS costType,
+            ZCM_B.FD_ID AS payerId,
+            SC. NAME AS typePay,
+            SC.KEY_WORD AS typePayKey,
+            SCS. NAME AS costType,
+            SCS.KEY_WORD AS costTypeKey,
             ZC.FD_REMARKS AS remarks1,
             DATE_FORMAT(ZC.CREATE_TIME, '%Y-%m-%d') AS creattime
         FROM
@@ -437,7 +478,64 @@
         AND SC.TYPE = 'TYPEPAY'
         LEFT JOIN system_config SCS ON SCS.KEY_WORD = ZC.FD_COSTTYPE
         AND SCS.TYPE = 'COSTTYPE'
-        WHERE 1=1 AND ZC.FD_ID = #{id}
-        ORDER BY ZC.CREATE_TIME ASC
+        WHERE
+            1 = 1
+        AND ZC.FD_ID = #{id}
+        ORDER BY
+            ZC.CREATE_TIME ASC
     </select>
+
+
+
+
+    <!--删除/恢复合同信息-->
+    <update id="updateContractExpenses" parameterType="java.util.Map">
+        UPDATE ZDEV_CONTRACT_EXPENSES ZG
+        <trim prefix="set" suffixOverrides=",">
+            <if test="typePayKey!=null and typePayKey != ''">
+                ZG.FD_TYPE = #{typePayKey},
+            </if>
+            <if test="costTypeKey!=null and costTypeKey != ''">
+                ZG.FD_COSTTYPE = #{costTypeKey},
+            </if>
+            <if test="amount!=null and amount != ''">
+                ZG.FD_AMOUNT = #{amount},
+            </if>
+            <if test="payeeId!=null and payeeId != ''">
+                ZG.FD_PAYEE = #{payeeId},
+            </if>
+            <if test="payerId!=null and payerId != ''">
+                ZG.FD_PAYER = #{payerId},
+            </if>
+            <if test="remarks!=null and remarks != ''">
+                ZG.FD_REMARKS = #{remarks},
+            </if>
+            <if test="lastCreateUser!=null and lastCreateUser != ''">
+                ZG.LAST_CREATE_USER = #{lastCreateUser},
+            </if>
+            <if test="lastCreateTime!=null and lastCreateTime != ''">
+                ZG.LAST_CREATE_TIME = #{lastCreateTime},
+            </if>
+        </trim>
+        WHERE 1=1
+        AND ZG.FD_ID = #{id}
+        <if test="no!=null and no != ''">
+            AND ZG.FD_NO = #{no}
+        </if>
+
+    </update>
+
+
+    <!--删除收支明细-->
+    <delete id="deleteContracExpenses"  parameterType="java.util.Map" >
+        DELETE FROM ZDEV_CONTRACT_EXPENSES WHERE 1=1  AND FD_ID = #{id}  AND FD_NO = #{no}
+    </delete>
+
+
+    <!--删除合作伙伴-->
+    <delete id="deleteContractPartner"  parameterType="java.util.Map" >
+        DELETE FROM ZDEV_CONTRACT_PARTNER WHERE 1=1  AND FD_ID = #{id}  AND FD_NO = #{no}
+    </delete>
+
+
 </mapper>
