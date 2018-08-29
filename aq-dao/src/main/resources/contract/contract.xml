@@ -408,7 +408,7 @@
 
     <!--删除合同商品明细-->
     <delete id="deleteContractGoodList" parameterType="java.util.Map">
-        delete from ZDEV_CONTRACT_GOODS where FD_GOODS = #{id}
+        delete from ZDEV_CONTRACT_GOODS where FD_ID = #{id}
     </delete>
 
     <!--查询子合同明细-->

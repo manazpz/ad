@@ -6,7 +6,7 @@ package aq.common.constants;
 public final class APPConstants {
 
     //文件服务器地址
-    public static final String FILE_SERVICE_URL = "http://47.106.177.213:8081/contract";
+    public static final String FILE_SERVICE_URL = "http://59.110.157.132:8081/contract";
 //    public static final String FILE_SERVICE_URL = "D:\\resource\\contract\\";
 
     //附件资源位置
