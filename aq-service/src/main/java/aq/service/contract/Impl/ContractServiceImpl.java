@@ -56,12 +56,15 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             res.clear();
             res.put("id",orderDetailMap.get("id"));
             res.put("no",orderDetailMap.get("NO"));
-            res.put("type","HT");
+            res.put("type",orderDetailMap.get("type"));
             List<Map<String, Object>> maps = contractDao.selectContractGoodList(res);
             List<Map<String, Object>> mapAtta = sysDao.selectContractAttaList(res);
-            orderDetailMap.put("goods",maps);
+            ArrayList arrayList = new ArrayList();
+            for (Map obj : maps) {
+                arrayList.add(obj.get("goodsId"));
+            }
+            orderDetailMap.put("goods",arrayList);
             orderDetailMap.put("file",mapAtta);
-            orderDetailMap.put("fileList",mapAtta);
         }
         JsonArray asJsonArray = GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(contractMaps)).getAsJsonArray();
         contractMapJson.get("data").getAsJsonObject().add("items",asJsonArray);
@@ -70,49 +73,76 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
 
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
+    public JsonObject queryContractParList(JsonObject jsonObject) {
+        jsonObject.addProperty("service","Contract");
+        return query(jsonObject,(map)->{
+            return contractDao.selectContractParList(map);
+        });
+    }
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
+    @Override
     public JsonObject insertContract(JsonObject jsonObject) {
         AbsAccessUser user = Factory.getContext().user();
         Rtn rtn = new Rtn("Contract");
         Map<String,Object> res = new HashMap<>();
-        Map<String,Object> rest = new HashMap<>();
+        Map<String,Object> ress = new HashMap<>();
+        Map<String,Object> resss = new HashMap<>();
+        String contractID = UUIDUtil.getUUID();
         if (user == null) {
             rtn.setCode(10000);
             rtn.setMessage("未登录！");
             return Func.functionRtnToJsonObject.apply(rtn);
         }
-        res.clear();
-        res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
-        List<Map<String, Object>> parentList = null;
-        if(!res.get("subContract").equals("")){
-            rest.put("id",res.get("subContract"));
-            List<Map<String, Object>> mapParent = contractDao.selectContracList(rest);
-            parentList = mapParent;
-            res.put("parent",mapParent.get(0).get("number"));
+        ress.clear();
+        ress = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        if(!StringUtil.isEmpty(ress.get("subContract"))) {
+            res.clear();
+            resss.clear();
+            resss.put("id",ress.get("subContract"));
+            List<Map<String, Object>> mapParent = contractDao.selectContracList(resss);
+            if(mapParent.size() > 0) {
+                resss.clear();
+                resss.put("parentId",ress.get("subContract"));
+                List<Map<String, Object>> maps = contractDao.selectContracSub(resss);
+                if(maps.size() == 0){
+                    resss.put("no","10");
+                }else{
+                    resss.put("no",Integer.parseInt(maps.get(maps.size()-1).get("FD_NO").toString()) +10);
+                }
+                resss.put("id",contractID);
+                contractDao.insertContractSub(resss);
+
+                res.put("parent",mapParent.get(0).get("number"));
+            }
         }
-        res.put("id",UUIDUtil.getUUID());
-        res.put("title",res.get("title"));
-        res.put("number",res.get("number"));
-        res.put("type",res.get("contractType"));
-        res.put("customerKeyA",res.get("customerKeyA"));
-        res.put("customerKeyB", res.get("customerKeyB"));
-        res.put("money", Double.parseDouble(res.get("money").equals("")? "0" :res.get("money").toString().replace(",", "")));
-        res.put("money_init", Double.parseDouble(res.get("money_init").equals("")? "0" :res.get("money_init").toString().replace(",", "")));
-        res.put("paid", Double.parseDouble(res.get("paid").equals("")? "0" :res.get("paid").toString().replace(",", "")));
-        res.put("unpaid", Double.parseDouble(res.get("unpaid").equals("")? "0" :res.get("unpaid").toString().replace(",", "")));
-        res.put("expenses", Double.parseDouble(res.get("expenses").equals("")? "0" :res.get("expenses").toString().replace(",", "")));
-        res.put("income", Double.parseDouble(res.get("income").equals("")? "0" :res.get("income").toString().replace(",", "")));
-        res.put("tax", Double.parseDouble(res.get("tax").equals("")? "0" :res.get("tax").toString().replace(",", "")));
-        res.put("taxlimit", Double.parseDouble(res.get("taxlimit").equals("")? "0" :res.get("taxlimit").toString().replace(",", "")));
+        res.put("id",contractID);
+        res.put("title",ress.get("title"));
+        res.put("number",ress.get("number"));
+        res.put("type",ress.get("contractType"));
+        res.put("customerKeyA",ress.get("customerKeyA"));
+        res.put("customerKeyB", ress.get("customerKeyB"));
+        res.put("money", Double.parseDouble(ress.get("money").equals("")? "0" :ress.get("money").toString().replace(",", "")));
+        res.put("money_init", Double.parseDouble(ress.get("money_init").equals("")? "0" :ress.get("money_init").toString().replace(",", "")));
+        res.put("paid", Double.parseDouble(ress.get("paid").equals("")? "0" :ress.get("paid").toString().replace(",", "")));
+        res.put("unpaid", Double.parseDouble(ress.get("unpaid").equals("")? "0" :ress.get("unpaid").toString().replace(",", "")));
+        res.put("expenses", Double.parseDouble(ress.get("expenses").equals("")? "0" :ress.get("expenses").toString().replace(",", "")));
+        res.put("income", Double.parseDouble(ress.get("income").equals("")? "0" :ress.get("income").toString().replace(",", "")));
+        res.put("tax", Double.parseDouble(ress.get("tax").equals("")? "0" :ress.get("tax").toString().replace(",", "")));
+        res.put("taxlimit", Double.parseDouble(ress.get("taxlimit").equals("")? "0" :ress.get("taxlimit").toString().replace(",", "")));
         try {
-            Date signTime = new SimpleDateFormat("yyyy-MM-dd").parse(res.get("signTime").toString());
-            Date expireTime = new SimpleDateFormat("yyyy-MM-dd").parse(res.get("expireTime").toString());
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS Z");
+            String d1 = ress.get("signTime").toString().replace("Z", " UTC");
+            String d2 = ress.get("expireTime").toString().replace("Z", " UTC");
+            Date signTime = format.parse(d1);
+            Date expireTime = format.parse(d2);
             res.put("signTime", signTime);
             res.put("expireTime", expireTime);
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        res.put("currency", res.get("currency"));
-        res.put("remarks1", res.get("reamrks1"));
+        res.put("currency", ress.get("currency"));
+        res.put("remarks1", ress.get("reamrks1"));
         res.put("status", "BG");
         res.put("createUser",user.getUserId());
         res.put("lastCreateUser",user.getUserId());
@@ -120,47 +150,37 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("createTime",new Date());
         res.put("lastCreateTime",new Date());
         contractDao.insertContract(res);
-        List<Map<String, Object>> mapgoods = (List<Map<String, Object>>) res.get("goodsIds");
+        List<Map<String, Object>> mapgoods = (List<Map<String, Object>>) ress.get("goods");
         for(int i = 0; i < mapgoods.size(); i++){
-            rest.put("id",res.get("id"));
-            rest.put("no",i*10 +10);
-            rest.put("goods",mapgoods.get(i));
-            rest.put("createUser",user.getUserId());
-            rest.put("lastCreateUser",user.getUserId());
-            rest.put("createTime",new Date());
-            rest.put("lastCreateTime",new Date());
-            contractDao.insertGoods(rest);
+            res.clear();
+            res.put("id",contractID);
+            res.put("no",i*10 +10);
+            res.put("goods",mapgoods.get(i));
+            res.put("createUser",user.getUserId());
+            res.put("lastCreateUser",user.getUserId());
+            res.put("createTime",new Date());
+            res.put("lastCreateTime",new Date());
+            contractDao.insertGoods(res);
         }
-        if(!res.get("subContract").equals("")){
-            res.put("parentId",parentList.get(0).get("id"));
-            List<Map<String, Object>> maps = contractDao.selectContracSub(res);
-            if(maps.size() == 0){
-                res.put("no","10");
-            }else{
-                res.put("no",maps.size()*10 +10);
-            }
-            contractDao.insertContractSub(res);
-        }
-        if(res.get("file") != null ){
-            List<Map<String, Object>> mapfile = (List<Map<String, Object>>) res.get("file");
-            List<Map<String, Object>> mapsize = (List<Map<String, Object>>) res.get("size");
-            List<Map<String, Object>> mapsuffix = (List<Map<String, Object>>) res.get("suffix");
-            List<Map<String, Object>> mapname = (List<Map<String, Object>>) res.get("name");
-            Map<String, Object> finalRes1 = res;
-            for(int i = 0; i < mapfile.size(); i++){
-                rest.put("id",UUIDUtil.getUUID());
-                rest.put("type",finalRes1.get("types"));
-                rest.put("refId",finalRes1.get("id"));
-                rest.put("name",mapname.get(i));
-                rest.put("size",mapsize.get(i));
-                rest.put("extend",mapsuffix.get(i));
-                rest.put("url",mapfile.get(i).get("url"));
-                rest.put("createUser",user.getUserId());
-                rest.put("lastCreateUser",user.getUserId());
-                rest.put("createTime",new Date());
-                rest.put("lastCreateTime",new Date());
+        if(ress.get("file") != null ){
+            List<Map<String, Object>> files = (List<Map<String, Object>>) ress.get("file");
+            for(Map obj : files){
+                res.clear();
+                res.put("id",UUIDUtil.getUUID());
+                res.put("type","HT");
+                res.put("refId",contractID);
+                Map<String, Object> response = (Map<String, Object>) obj.get("response");
+                Map<String, Object> data = (Map<String, Object>) response.get("data");
+                res.put("name",data.get("name"));
+                res.put("size",data.get("size"));
+                res.put("extend",data.get("suffix"));
+                res.put("url",data.get("url"));
+                res.put("createUser",user.getUserId());
+                res.put("lastCreateUser",user.getUserId());
+                res.put("createTime",new Date());
+                res.put("lastCreateTime",new Date());
                 //插入附件表
-                sysDao.insertAttachment(rest);
+                sysDao.insertAttachment(res);
             }
         }
         rtn.setCode(200);
@@ -180,71 +200,48 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             return Func.functionRtnToJsonObject.apply(rtn);
         }
         res.clear();
+        rest.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
-        res.put("id",res.get("id"));
-        res.put("lastCreateUser",user.getUserId());
-        res.put("lastCreateTime",new Date());
-        res.put("title",res.get("title"));
-        res.put("number",res.get("number"));
-        res.put("customerKeyA",res.get("customerKeyA"));
-        res.put("customerKeyB", res.get("customerKeyB"));
-        if(res.get("money") != null)  res.put("money", Double.parseDouble(res.get("money").equals("")? "0" :res.get("money").toString().replace(",", "")));
-        res.put("money_init", res.get("money_init").equals("") ?"0" :res.get("money_init"));
-        res.put("paid", Double.parseDouble(res.get("paid").equals("")? "0" :res.get("paid").toString().replace(",", "")));
-        if(res.get("unpaid") != null) res.put("unpaid", Double.parseDouble(res.get("unpaid").equals("")? "0" :res.get("unpaid").toString().replace(",", "")));
-        if(res.get("expenses") != null) res.put("expenses", Double.parseDouble(res.get("expenses").equals("")? "0" :res.get("expenses").toString().replace(",", "")));
-        if(res.get("income") != null) res.put("income", Double.parseDouble(res.get("income").equals("")? "0" :res.get("income").toString().replace(",", "")));
-        res.put("tax", Double.parseDouble(res.get("tax").equals("")? "0" :res.get("tax").toString().replace(",", "")));
-        res.put("taxlimit", Double.parseDouble(res.get("taxlimit").equals("")? "0" :res.get("taxlimit").toString().replace(",", "")));
-        try {
-            Date signTime = new SimpleDateFormat("yyyy-MM-dd").parse(res.get("signTime").toString());
-            Date expireTime = new SimpleDateFormat("yyyy-MM-dd").parse(res.get("expireTime").toString());
-            res.put("signTime", signTime);
-            res.put("expireTime", expireTime);
+        rest.put("id",res.get("id"));
+        rest.put("lastCreateUser",user.getUserId());
+        rest.put("lastCreateTime",new Date());
+        rest.put("title",res.get("title"));
+        rest.put("number",res.get("number"));
+        rest.put("customerKeyA",res.get("customerKeyA"));
+        rest.put("customerKeyB", res.get("customerKeyB"));
+        if(res.get("money") != null)  rest.put("money", Double.parseDouble(res.get("money").equals("")? "0" :res.get("money").toString().replace(",", "")));
+        rest.put("money_init", res.get("money_init").equals("") ?"0" :res.get("money_init"));
+        rest.put("paid", Double.parseDouble(res.get("paid").equals("")? "0" :res.get("paid").toString().replace(",", "")));
+        if(res.get("unpaid") != null) rest.put("unpaid", Double.parseDouble(res.get("unpaid").equals("")? "0" :res.get("unpaid").toString().replace(",", "")));
+        if(res.get("expenses") != null) rest.put("expenses", Double.parseDouble(res.get("expenses").equals("")? "0" :res.get("expenses").toString().replace(",", "")));
+        if(res.get("income") != null) rest.put("income", Double.parseDouble(res.get("income").equals("")? "0" :res.get("income").toString().replace(",", "")));
+        rest.put("tax", Double.parseDouble(res.get("tax").equals("")? "0" :res.get("tax").toString().replace(",", "")));
+        rest.put("taxlimit", Double.parseDouble(res.get("taxlimit").equals("")? "0" :res.get("taxlimit").toString().replace(",", "")));
+       try {
+           SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS Z");
+           String d1 = res.get("signTime").toString().replace("Z", " UTC");
+           String d2 = res.get("expireTime").toString().replace("Z", " UTC");
+           if(d1.indexOf("ABC")!=-1){
+               Date signTime = format.parse(d1);
+               rest.put("signTime", signTime);
+           }
+           if(d2.indexOf("ABC")!=-1){
+               Date expireTime = format.parse(d2);
+               rest.put("expireTime", expireTime);
+           }
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        res.put("currency", res.get("currency"));
-        res.put("reamrks1", res.get("reamrks1"));
-        res.put("updateTime",new Date());
-        contractDao.updateContract(res);
-        List<Map<String, Object>> mapfileId = (List<Map<String, Object>>) res.get("fileId");
-        if(mapfileId.size()>0){
-            //進行刪除操作
-            for(int i = 0; i < mapfileId.size(); i++){
-                rest.put("id",mapfileId.get(i));
-                sysDao.deleteAtta(rest);
-            }
-        }
-        List<Map<String, Object>> mapFile = (List<Map<String, Object>>) res.get("file");
-        List<Map<String, Object>> mapfileList = (List<Map<String, Object>>) res.get("fileList");
-        List<Map<String, Object>> mapname = (List<Map<String, Object>>) res.get("name");
-        List<Map<String, Object>> mapsize = (List<Map<String, Object>>) res.get("size");
-        List<Map<String, Object>> mapsuffix = (List<Map<String, Object>>) res.get("suffix");
-        for(int i = 0; i < mapFile.size(); i++){
-            if("".equals(mapFile.get(i).get("id"))){
-                rest.put("id",UUIDUtil.getUUID());
-                rest.put("type",res.get("types"));
-                rest.put("refId",res.get("id"));
-                rest.put("name",mapname.get(i));
-                rest.put("size",mapsize.get(i));
-                rest.put("extend",mapsuffix.get(i));
-                rest.put("url",mapFile.get(i).get("url"));
-                rest.put("createUser",user.getUserId());
-                rest.put("lastCreateUser",user.getUserId());
-                rest.put("createTime",new Date());
-                rest.put("lastCreateTime",new Date());
-                //插入附件表
-                sysDao.insertAttachment(rest);
-            }
-        }
-
-        List<Map<String, Object>> mapgoods = (List<Map<String, Object>>) res.get("goodsIds");
+        rest.put("currency", res.get("currency"));
+        rest.put("reamrks1", res.get("reamrks1"));
+        rest.put("updateTime",new Date());
+        contractDao.updateContract(rest);
+        updataAtta(user, res, rest,"HT");
+        List<Map<String, Object>> mapgoods = (List<Map<String, Object>>) res.get("goods");
         contractDao.deleteContractGoodList(res);
-        rest.put("id",res.get("id"));
         for(int i = 0; i < mapgoods.size(); i++){
-            res.clear();
-            res.put("name",mapgoods.get(i));
+            rest.clear();
+            rest.put("id",res.get("id"));
             rest.put("no",i*10 +10);
             rest.put("goods",mapgoods.get(i));
             rest.put("createUser",user.getUserId());
@@ -253,11 +250,13 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             rest.put("lastCreateTime",new Date());
             contractDao.insertGoods(rest);
         }
-
         rtn.setCode(200);
         rtn.setMessage("success");
         return Func.functionRtnToJsonObject.apply(rtn);
+
     }
+
+
 
 
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
@@ -314,6 +313,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("id",res.get("id"));
         res.put("no",res.get("no"));
         res.put("user",res.get("user"));
+        res.put("remarks1",res.get("remarks1"));
         res.put("pro",pro);
         res.put("income",pro*mainincome/100);
         contractDao.updateContractPartner(res);
@@ -342,7 +342,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         if(maps.size() == 0){
             res.put("no","10");
         }else{
-            res.put("no",maps.size()*10 +10);
+            res.put("no",Integer.parseInt(maps.get(maps.size()).get("no").toString()) +10);
         }
         res.put("user",res.get("user"));
         res.put("types",res.get("types"));
@@ -365,10 +365,34 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryContractSubtList(JsonObject jsonObject) {
+        AbsAccessUser user = Factory.getContext().user();
+        Map<String,Object> res = new HashMap<>();
         jsonObject.addProperty("service","Contract");
-        return query(jsonObject,(map)->{
+        if(StringUtil.isEmpty(jsonObject.get("flag"))) {
+            jsonObject.addProperty("term",user.getUserId());
+        }
+        JsonObject contractMapJson = query(jsonObject, (map) -> {
             return contractDao.selectContractSubList(map);
         });
+        Map contractMap = GsonHelper.getInstance().fromJson(contractMapJson, Map.class);
+        List<Map> contractMaps = (List) ((Map) contractMap.get("data")).get("items");
+        for(Map<String,Object> orderDetailMap :contractMaps) {
+            res.clear();
+            res.put("id",orderDetailMap.get("id"));
+            res.put("no",orderDetailMap.get("NO"));
+            res.put("type","HT");
+            List<Map<String, Object>> maps = contractDao.selectContractGoodList(res);
+            List<Map<String, Object>> mapAtta = sysDao.selectContractAttaList(res);
+            ArrayList arrayList = new ArrayList();
+            for (Map obj : maps) {
+                arrayList.add(obj.get("goodsId"));
+            }
+            orderDetailMap.put("goods",arrayList);
+            orderDetailMap.put("file",mapAtta);
+        }
+        JsonArray asJsonArray = GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(contractMaps)).getAsJsonArray();
+        contractMapJson.get("data").getAsJsonObject().add("items",asJsonArray);
+        return contractMapJson;
     }
 
 
@@ -392,7 +416,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         if(maps.size() == 0){
             res.put("no","10");
         }else{
-            res.put("no",maps.size()*10 +10);
+            res.put("no",Integer.parseInt(maps.get(maps.size()-1).get("NO").toString()) +10);
         }
         res.put("type",res.get("typePayes"));
         res.put("payee",res.get("payee"));
@@ -405,20 +429,19 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.put("reamrks1",res.get("reamrks1"));
         contractDao.insertContractExpenses(res);
         if(res.get("file") != null ){
-            List<Map<String, Object>> mapfile = (List<Map<String, Object>>) res.get("file");
-            List<Map<String, Object>> mapsize = (List<Map<String, Object>>) res.get("size");
-            List<Map<String, Object>> mapsuffix = (List<Map<String, Object>>) res.get("suffix");
-            List<Map<String, Object>> mapname = (List<Map<String, Object>>) res.get("name");
-            Map<String, Object> finalRes1 = res;
-            for(int i = 0; i < mapfile.size(); i++){
+            List<Map<String, Object>> files = (List<Map<String, Object>>) res.get("file");
+            for(Map obj : files){
+                rest.clear();
                 rest.put("id",UUIDUtil.getUUID());
-                rest.put("type",finalRes1.get("types"));
-                rest.put("remarks",finalRes1.get("no"));
-                rest.put("refId",finalRes1.get("id"));
-                rest.put("name",mapname.get(i));
-                rest.put("size",mapsize.get(i));
-                rest.put("extend",mapsuffix.get(i));
-                rest.put("url",mapfile.get(i));
+                rest.put("type","SZ");
+                rest.put("remarks",res.get("no"));
+                rest.put("refId",res.get("id"));
+                Map<String, Object> response = (Map<String, Object>) obj.get("response");
+                Map<String, Object> data = (Map<String, Object>) response.get("data");
+                rest.put("name",data.get("name"));
+                rest.put("size",data.get("size"));
+                rest.put("extend",data.get("suffix"));
+                rest.put("url",data.get("url"));
                 rest.put("createUser",user.getUserId());
                 rest.put("lastCreateUser",user.getUserId());
                 rest.put("createTime",new Date());
@@ -445,7 +468,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             double expenses = Double.parseDouble(maprest.get(0).get("expenses").toString());
             //总税收
             double tax = Double.parseDouble(maprest.get(0).get("tax").toString());
-            if("FK".equals(res.get("typePaye"))){
+            if("FK".equals(res.get("typePayes"))){
                 rest.put("expenses",df.format(expenses+amount));
                 rest.put("income",df.format(paid-(expenses+amount)-tax));
             }else{
@@ -463,7 +486,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
                     double paid1 = Double.parseDouble(mapContract.get(i).get("paid").toString());
                     double expenses1 = Double.parseDouble(mapContract.get(i).get("expenses").toString());
                     double tax1 = Double.parseDouble(mapContract.get(i).get("tax").toString());
-                    if("FK".equals(res.get("typePaye"))){
+                    if("FK".equals(res.get("typePayes"))){
                         rest.put("expenses",df.format(expenses1+amount));
                         rest.put("income",df.format(paid1-(expenses1+amount)-tax1));
                     }else{
@@ -496,7 +519,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             double expenses = Double.parseDouble(finalMaprest1.get(0).get("expenses").toString());
             double taxlimit = Double.parseDouble(finalMaprest1.get(0).get("taxlimit").toString());
             double tax1 = Double.parseDouble(finalMaprest1.get(0).get("tax").toString());
-            if("FK".equals(finalRes.get("typePaye"))){
+            if("FK".equals(finalRes.get("typePayes"))){
                 //已垫付(支出)金额
                 rest.put("income",df.format((paid-(expenses+amount)-tax1)*pro/100));
             }else{
@@ -529,36 +552,9 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             return Func.functionRtnToJsonObject.apply(rtn);
         }
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
-        List<Map<String, Object>> mapfileId = (List<Map<String, Object>>) res.get("fileId");
-        if(mapfileId.size()>0){
-            //進行刪除操作
-            for(int i = 0; i < mapfileId.size(); i++){
-                rest.put("id",mapfileId.get(i));
-                sysDao.deleteAtta(rest);
-            }
-        }
-        List<Map<String, Object>> mapFile = (List<Map<String, Object>>) res.get("file");
-        List<Map<String, Object>> mapname = (List<Map<String, Object>>) res.get("name");
-        List<Map<String, Object>> mapsize = (List<Map<String, Object>>) res.get("size");
-        List<Map<String, Object>> mapsuffix = (List<Map<String, Object>>) res.get("suffix");
-        for(int i = 0; i < mapFile.size(); i++){
-            if("".equals(mapFile.get(i).get("id"))){
-                rest.put("id",UUIDUtil.getUUID());
-                rest.put("type",res.get("types"));
-                rest.put("remarks",res.get("NO"));
-                rest.put("refId",res.get("id"));
-                rest.put("name",mapname.get(i));
-                rest.put("size",mapsize.get(i));
-                rest.put("extend",mapsuffix.get(i));
-                rest.put("url",mapFile.get(i).get("url"));
-                rest.put("createUser",user.getUserId());
-                rest.put("lastCreateUser",user.getUserId());
-                rest.put("createTime",new Date());
-                rest.put("lastCreateTime",new Date());
-                //插入附件表
-                sysDao.insertAttachment(rest);
-            }
-        }
+        rest.clear();
+        rest.put("id",res.get("id"));
+        updataAtta(user, res, rest,"SZ");
         rest.clear();
         rest.put("id",res.get("id"));
         List<Map<String, Object>> maprest = contractDao.selectContracList(rest);
@@ -696,7 +692,6 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
                 res.put("id",orderDetailMap.get("id"));
                 List<Map<String, Object>> maps = sysDao.selectContractAttaList(res);
                 orderDetailMap.put("file",maps);
-                orderDetailMap.put("fileList",maps);
             }
 
             return contractMaps;
@@ -710,6 +705,21 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         return query(jsonObject,(map)->{
             return contractDao.selectContractGoodList(map);
         });
+    }
+
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
+    @Override
+    public JsonObject deleteContractGoodList(JsonObject jsonObject) {
+        Rtn rtn = new Rtn("Contract");
+        Map<String,Object> res = new HashMap<>();
+        res.clear();
+        res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        res.put("id",res.get("id"));
+        contractDao.deleteContractGoodList(res);
+        rtn.setCode(200);
+        rtn.setMessage("success");
+        return Func.functionRtnToJsonObject.apply(rtn);
     }
 
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
@@ -730,8 +740,6 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         res.put("id",res.get("id"));
-        res.put("type",res.get("types"));
-        res.put("url",res.get("flie"));
         sysDao.deleteAtta(res);
         rtn.setCode(200);
         rtn.setMessage("success");
@@ -753,11 +761,14 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             return Func.functionRtnToJsonObject.apply(rtn);
         }
         res.clear();
-        res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
-        res.put("id",res.get("id"));
-        res.put("no",res.get("no"));
-        List<Map<String, Object>> mapz = contractDao.selectContracExpenses(res);
+        rest = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        res = (Map<String, Object>) rest.get("row");
+        rest.clear();
+        rest.put("id",res.get("id"));
+        rest.put("no",res.get("no"));
+        List<Map<String, Object>> mapz = contractDao.selectContracExpenses(rest);
         if(mapz.size()>0){
+            rest.clear();
             mapz.get(0).get("amount");
             rest.put("id",res.get("id"));
             List<Map<String, Object>> maprest = contractDao.selectContracList(rest);
@@ -778,9 +789,16 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
                 //总税收
                 double tax = Double.parseDouble(maprest.get(0).get("tax").toString());
                 double taxlimit = Double.parseDouble(maprest.get(0).get("taxlimit").toString());
-                rest.put("paid",df.format(paid+amount));
-                rest.put("income",df.format((paid+amount) - (paid+amount)*taxlimit/100 -expenses));
-                rest.put("tax",df.format((paid+amount)*taxlimit/100));
+                if("FK".equals(res.get("typePayKey"))){
+                    //删除付款单
+                    rest.put("expenses",df.format(expenses-amount));
+                    rest.put("income",df.format(paid-(expenses-amount)-tax));
+                }else{
+                    //删除收款单
+                    rest.put("paid",df.format(paid-amount));
+                    rest.put("income",df.format((paid-amount) - (paid-amount)*taxlimit/100 -expenses));
+                    rest.put("tax",df.format((paid-amount)*taxlimit/100));
+                }
                 //确认为子合同
                 if(maprest.get(0).get("parent")!= null){
                     //修改母合同信息
@@ -791,9 +809,14 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
                         double expenses1 = Double.parseDouble(mapContract.get(i).get("expenses").toString());
                         double tax1 = Double.parseDouble(mapContract.get(i).get("tax").toString());
                         double taxlimit1 = Double.parseDouble(mapContract.get(0).get("taxlimit").toString());
-                        rest.put("paid",df.format(paid1+amount));
-                        rest.put("income",df.format((paid1+amount) - (paid1+amount)*taxlimit1/100 -expenses1));
-                        rest.put("tax",df.format((paid1+amount)*taxlimit1/100));
+                        if("FK".equals(res.get("typePayKey"))){
+                            rest.put("expenses",df.format(expenses1-amount));
+                            rest.put("income",df.format(paid1-(expenses1-amount)-tax1));
+                        }else{
+                            rest.put("paid",df.format(paid1-amount));
+                            rest.put("income",df.format((paid1-amount) - (paid1-amount)*taxlimit1/100 -expenses1));
+                            rest.put("tax",df.format((paid1-amount)*taxlimit1/100));
+                        }
                         rest.put("id",mapContract.get(i).get("id"));
                         contractDao.updateContract(rest);
                     }
@@ -813,18 +836,24 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             Map<String, Object> finalRes = res;
             List<Map<String, Object>> finalMaprest1 = finalMaprest;
             double finalAmount = amount;
+            Map<String, Object> finalRest = rest;
             mapPaetner.forEach(p-> {
                 double pro = Double.parseDouble(p.get("pro").toString());
                 double paid = Double.parseDouble(finalMaprest1.get(0).get("paid").toString());
                 double expenses = Double.parseDouble(finalMaprest1.get(0).get("expenses").toString());
                 double taxlimit = Double.parseDouble(finalMaprest1.get(0).get("taxlimit").toString());
                 double tax1 = Double.parseDouble(finalMaprest1.get(0).get("tax").toString());
-                //实收总金额
-                rest.put("income", df.format((((paid + finalAmount) - (paid + finalAmount) * taxlimit / 100) - expenses) * pro / 100));
-                rest.put("no", p.get("no"));
-                rest.put("id", finalMaprest1.get(0).get("id"));
+                if("FK".equals(finalRes.get("typePayKey"))){
+                    //已垫付(支出)金额
+                    finalRest.put("income",df.format((paid-(expenses- finalAmount)-tax1)*pro/100));
+                }else{
+                    //实收总金额
+                    finalRest.put("income",df.format((((paid - finalAmount) - (paid- finalAmount)*taxlimit/100)- expenses) *pro/100));
+                }
+                finalRest.put("no", p.get("no"));
+                finalRest.put("id", finalMaprest1.get(0).get("id"));
                 //修改合伙人收益
-                contractDao.updateContractPartner(rest);
+                contractDao.updateContractPartner(finalRest);
             });
             res.put("id",res.get("id"));
             res.put("no",res.get("no"));
@@ -833,6 +862,41 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         rtn.setCode(200);
         rtn.setMessage("success");
         return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+    private void updataAtta(AbsAccessUser user, Map<String, Object> res, Map<String, Object> rest ,String type) {
+        List<Map<String, Object>> files = (List<Map<String, Object>>) res.get("file");
+        rest.clear();
+        rest.put("id",res.get("id"));
+        rest.put("type",type);
+        sysDao.deleteAtta(rest);
+        if(res.get("file") != null ){
+            for(Map obj : files){
+                rest.clear();
+                rest.put("id", UUIDUtil.getUUID());
+                rest.put("type",type);
+                rest.put("refId",res.get("id"));
+                if(obj.get("response")!=null){
+                    Map<String, Object> response = (Map<String, Object>) obj.get("response");
+                    Map<String, Object> data = (Map<String, Object>) response.get("data");
+                    rest.put("name",data.get("name"));
+                    rest.put("size",data.get("size"));
+                    rest.put("extend",data.get("suffix"));
+                    rest.put("url",data.get("url"));
+                }else{
+                    rest.put("name",obj.get("name"));
+                    rest.put("size",obj.get("size"));
+                    rest.put("extend",obj.get("extend"));
+                    rest.put("url",obj.get("url"));
+                }
+                rest.put("createUser",user.getUserId());
+                rest.put("lastCreateUser",user.getUserId());
+                rest.put("createTime",new Date());
+                rest.put("lastCreateTime",new Date());
+                //插入附件表
+                sysDao.insertAttachment(rest);
+            }
+        }
     }
 
 }

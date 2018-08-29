@@ -134,6 +134,9 @@
             <if test="title!=null and title != ''">
                 ZG.FD_TITLE = #{title},
             </if>
+            <if test="number!=null and number != ''">
+                ZG.FD_NUMBER = #{number},
+            </if>
             <if test="customerKeyA!=null and customerKeyA != ''">
                 ZG.FD_CUSTOMER_A = #{customerKeyA},
             </if>
@@ -171,10 +174,10 @@
                 ZG.FD_STATUS = #{status},
             </if>
             <if test="signTime!=null and signTime != ''">
-                ZG.FD_SIGN_TIME = #{signTime},
+                ZG.FD_SIGN_TIME = #{signTime,jdbcType=TIMESTAMP},
             </if>
             <if test="expireTime!=null and expireTime != ''">
-                ZG.FD_EXPIRE_TIME = #{expireTime},
+                ZG.FD_EXPIRE_TIME = #{expireTime,jdbcType=TIMESTAMP},
             </if>
             <if test="remarks1!=null and remarks1 != ''">
                 ZG.FD_REMARK1 = #{remarks1},
@@ -207,7 +210,7 @@
         INSERT INTO ZDEV_CONTRACT_EXPENSES
         VALUES(#{id},
         #{no},
-        #{typePayes},
+        #{type},
         #{costType},
         #{amount},
         #{payee},
@@ -275,6 +278,7 @@
                 '%Y-%m-%d'
             ) AS expireTime,
             ZCN.FD_MONEY_INIT AS money_init,
+            ZC.FD_REMARKS AS remarks1,
             SCS. NAME AS status
         FROM
             ZDEV_CONTRACT_PARTNER ZC
@@ -313,8 +317,8 @@
             ZG.FD_NUMBER AS number,
             ZG.FD_PARENT AS parent,
             ZG.FD_TITLE AS title,
-            ZGM.FD_ID AS goodsIds,
-            ZGM.FD_NAME AS goods,
+            ZGM.FD_ID AS goods,
+            ZGM.FD_NAME AS goodsname,
             ZG.FD_CUSTOMER_A AS customerKeyA,
             ZCM_A.FD_NAME AS customer_a_Name,
             ZG.FD_CUSTOMER_B AS customerKeyB,
@@ -404,7 +408,7 @@
 
     <!--删除合同商品明细-->
     <delete id="deleteContractGoodList" parameterType="java.util.Map">
-        delete from ZDEV_CONTRACT_GOODS where FD_ID = #{id}
+        delete from ZDEV_CONTRACT_GOODS where FD_GOODS = #{id}
     </delete>
 
     <!--查询子合同明细-->
@@ -448,6 +452,9 @@
             </if>
             <if test="pro!=null and pro != ''">
                 ZG.FD_PROPORTIONS = #{pro},
+            </if>
+            <if test="remarks1!=null and remarks1 != ''">
+                ZG.FD_REMARKS = #{remarks1},
             </if>
         </trim>
         WHERE ZG.FD_ID = #{id} AND  ZG.FD_NO = #{no}
@@ -537,5 +544,17 @@
         DELETE FROM ZDEV_CONTRACT_PARTNER WHERE 1=1  AND FD_ID = #{id}  AND FD_NO = #{no}
     </delete>
 
+
+
+    <!--查询父合同-->
+    <select id="selectContractParList" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+            ZC.FD_ID AS id,
+            ZC.FD_TITLE AS title
+        FROM
+            ZDEV_CONTRACT_MAIN ZC
+        WHERE
+            ZC.FD_PARENT IS NULL
+    </select>
 
 </mapper>

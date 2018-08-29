@@ -11,6 +11,9 @@ public interface ContractDao {
     //获取合同数据
     List<Map<String,Object>> selectContracList(Map<String,Object> map);
 
+    //获取合同数据
+    List<Map<String,Object>> selectContractParList(Map<String,Object> map);
+
     //新增合同
     int insertContract(Map<String,Object> map);
 

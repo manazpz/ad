@@ -51,6 +51,14 @@ public class ContractController extends aq.controller.restful.System {
         }
         writerJson(response,out,contractService.queryContractList(jsonObject));
     }
+    //合同列表
+    @RequestMapping(value = "parlist", method=RequestMethod.GET)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"合同-查询"})
+    @ResponseBody
+    public void  contractParList(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        writerJson(response,out,contractService.queryContractParList(jsonObject));
+    }
 
     //新增合同
     @RequestMapping(value = "/insert",method = RequestMethod.POST)
@@ -159,6 +167,15 @@ public class ContractController extends aq.controller.restful.System {
     @ResponseBody
     public void queryContractGoodList(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
         writerJson(response,out,contractService.queryContractGoodList(requestJson));
+    }
+
+
+    //获取合同商品明细
+    @RequestMapping(value = "/deleteGoods",method = RequestMethod.POST)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"合同-查询"})
+    @ResponseBody
+    public void deleteGoods(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
+        writerJson(response,out,contractService.deleteContractGoodList(requestJson));
     }
 
 
