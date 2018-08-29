@@ -390,6 +390,8 @@
     <!--查询商品明细-->
     <select id="selectContractGoodList" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
+        ZC.FD_ID AS id,
+        ZC.FD_NO AS no,
             ZGM.FD_CODE AS code,
             ZGM.FD_NAME AS name,
             ZC.FD_GOODS AS goodsId,
@@ -409,6 +411,9 @@
     <!--删除合同商品明细-->
     <delete id="deleteContractGoodList" parameterType="java.util.Map">
         delete from ZDEV_CONTRACT_GOODS where FD_ID = #{id}
+        <if test="no!=null and no != ''">
+            AND FD_NO = #{no}
+        </if>
     </delete>
 
     <!--查询子合同明细-->

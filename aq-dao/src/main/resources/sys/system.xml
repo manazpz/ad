@@ -150,7 +150,16 @@
 
     <!--删除附件-->
     <delete id="deleteAtta"  parameterType="java.util.Map" >
-        DELETE FROM system_attachment WHERE ID = #{id}
+        DELETE FROM system_attachment WHERE
+        <if test="id!=null and type != ''">
+            ID = #{id}
+        </if>
+        <if test="refId!=null and refId != ''">
+            FD_REF_ID = #{refId}
+        </if>
+        <if test="type!=null and type != ''">
+            AND FD_TYPE = #{type}
+        </if>
     </delete>
 
     <!--查询合同附件信息-->

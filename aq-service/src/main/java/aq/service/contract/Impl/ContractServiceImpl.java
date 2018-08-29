@@ -716,6 +716,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         res.put("id",res.get("id"));
+        res.put("no",res.get("no"));
         contractDao.deleteContractGoodList(res);
         rtn.setCode(200);
         rtn.setMessage("success");
@@ -867,12 +868,15 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     private void updataAtta(AbsAccessUser user, Map<String, Object> res, Map<String, Object> rest ,String type) {
         List<Map<String, Object>> files = (List<Map<String, Object>>) res.get("file");
         rest.clear();
-        rest.put("id",res.get("id"));
+        rest.put("refId",res.get("id"));
         rest.put("type",type);
         sysDao.deleteAtta(rest);
         if(res.get("file") != null ){
             for(Map obj : files){
                 rest.clear();
+                if("SZ".equals(type)){
+                    rest.put("remarks",res.get("no"));
+                }
                 rest.put("id", UUIDUtil.getUUID());
                 rest.put("type",type);
                 rest.put("refId",res.get("id"));

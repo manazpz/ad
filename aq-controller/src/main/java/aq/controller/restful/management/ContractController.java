@@ -244,7 +244,7 @@ public class ContractController extends aq.controller.restful.System {
         JsonObject jsonObject = HttpUtil.getParameterMap(request);
         String fileName = jsonObject.get("name").getAsString() + "." + jsonObject.get("extend").getAsString();
         File file = new File(jsonObject.get("url").getAsString());
-        org.springframework.core.io.Resource body = new FileSystemResource(file);
+
         HttpServletRequest requests = ((ServletRequestAttributes) RequestContextHolder
                 .getRequestAttributes()).getRequest();
         String header = requests.getHeader("User-Agent").toUpperCase();
