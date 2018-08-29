@@ -625,7 +625,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
                 rest.put("payer",res.get("payerId"));
                 rest.put("lastCreateUser",user.getUserId());
                 rest.put("lastCreateTime",new Date());
-                rest.put("reamrks",res.get("reamrks1"));
+                rest.put("remarks",res.get("remarks1"));
                 contractDao.updateContractExpenses(rest);
             }
             List<Map<String, Object>> finalMaprest = new ArrayList<>();
@@ -669,7 +669,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             res.put("payerId",res.get("payerId"));
             res.put("lastCreateUser",user.getUserId());
             res.put("lastCreateTime",new Date());
-            res.put("reamrks",res.get("reamrks1"));
+            res.put("remarks",res.get("remarks1"));
             contractDao.updateContractExpenses(res);
         }
 

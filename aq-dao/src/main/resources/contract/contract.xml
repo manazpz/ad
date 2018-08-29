@@ -569,6 +569,7 @@
         WHERE
             ZC.FD_PARENT IS NULL
             AND FD_DELETE = 'N'
+            AND FD_TYPE = #{types}
     </select>
 
 </mapper>
