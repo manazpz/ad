@@ -51,7 +51,7 @@ public class ContractController extends aq.controller.restful.System {
         }
         writerJson(response,out,contractService.queryContractList(jsonObject));
     }
-    //合同列表
+    //子合同列表
     @RequestMapping(value = "parlist", method=RequestMethod.GET)
     @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"合同-查询"})
     @ResponseBody
@@ -85,11 +85,15 @@ public class ContractController extends aq.controller.restful.System {
     }
 
     //获取合同合作伙伴
-    @RequestMapping(value = "/queryPartner",method = RequestMethod.POST)
+    @RequestMapping(value = "/queryPartner",method = RequestMethod.GET)
     @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"合同-查询"})
     @ResponseBody
-    public void queryContractPartner(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
-        writerJson(response,out,contractService.queryContractPartner(requestJson));
+    public void  queryContractPartner(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        if(request.getAttribute("flag")== "admin"){
+            jsonObject.addProperty("flag","admin");
+        }
+        writerJson(response,out,contractService.queryContractPartner(jsonObject));
     }
 
     //删除合同合作伙伴
@@ -162,11 +166,12 @@ public class ContractController extends aq.controller.restful.System {
 
 
     //获取合同商品明细
-    @RequestMapping(value = "/contractGoodList",method = RequestMethod.POST)
+    @RequestMapping(value = "/contractGoodList",method = RequestMethod.GET)
     @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"合同-查询"})
     @ResponseBody
-    public void queryContractGoodList(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
-        writerJson(response,out,contractService.queryContractGoodList(requestJson));
+    public void queryContractGoodList(HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        writerJson(response,out,contractService.queryContractGoodList(jsonObject));
     }
 
 
@@ -230,11 +235,12 @@ public class ContractController extends aq.controller.restful.System {
     }
 
     //获取合同附件列表
-    @RequestMapping(value = "/queryAtta",method = RequestMethod.POST)
+    @RequestMapping(value = "/queryAtta",method = RequestMethod.GET)
     @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"合同-查询"})
     @ResponseBody
-    public void queryAtta(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
-        writerJson(response,out,contractService.queryContractAttaList(requestJson));
+    public void queryAtta(HttpServletRequest request, HttpServletResponse response, PrintWriter out)throws Exception{
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        writerJson(response,out,contractService.queryContractAttaList(jsonObject));
     }
 
     //读取资源文件

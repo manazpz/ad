@@ -101,7 +101,12 @@
             LEFT JOIN ZDEV_CUSTOMER_MAIN ZCM_B ON ZCM_B.FD_ID = ZG.FD_CUSTOMER_B
             LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZG.CREATE_USER
             LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZG.LAST_CREATE_USER
+            LEFT JOIN ZDEV_CONTRACT_PARTNER ZP ON ZP.FD_ID = ZG.FD_ID
+            LEFT JOIN ZDEV_CUSTOMER_MAIN ZM ON ZM.FD_ID = ZP.FD_USER
         WHERE 1=1
+        <if test="username != null">
+            AND ZM.FD_USER = #{username}
+        </if>
         <if test="id != null">
             AND ZG.FD_ID = #{id}
         </if>
@@ -179,10 +184,9 @@
             <if test="expireTime!=null and expireTime != ''">
                 ZG.FD_EXPIRE_TIME = #{expireTime,jdbcType=TIMESTAMP},
             </if>
-            <if test="remarks1!=null and remarks1 != ''">
-                ZG.FD_REMARK1 = #{remarks1},
+            <if test="reamrks1!=null and reamrks1 != ''">
+                ZG.FD_REMARK1 = #{reamrks1},
             </if>
-
             <if test="lastCreateUser!=null and lastCreateUser != ''">
                 ZG.LAST_CREATE_USER = #{lastCreateUser},
             </if>
@@ -288,7 +292,11 @@
         AND SC.TYPE = 'TYPEC'
         LEFT JOIN system_config SCS ON SCS.KEY_WORD = ZCN.FD_STATUS
         AND SCS.TYPE = 'CONTRACT'
+        LEFT JOIN ZDEV_CUSTOMER_MAIN ZN ON ZN.FD_ID = ZC.FD_USER
         WHERE 1=1 AND ZC.FD_ID = #{id}
+        <if test="username != null">
+            AND ZN.FD_USER = #{username}
+        </if>
         ORDER BY ZC.CREATE_TIME ASC
     </select>
 
@@ -560,6 +568,7 @@
             ZDEV_CONTRACT_MAIN ZC
         WHERE
             ZC.FD_PARENT IS NULL
+            AND FD_DELETE = 'N'
     </select>
 
 </mapper>

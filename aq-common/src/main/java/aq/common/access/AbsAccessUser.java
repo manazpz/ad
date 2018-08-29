@@ -6,7 +6,6 @@ public abstract class AbsAccessUser extends AbsIdentity {
 
     //用户ID
     String userId;
-
     //昵称
     String displayName;
 
@@ -29,5 +28,9 @@ public abstract class AbsAccessUser extends AbsIdentity {
     public abstract String getDisplayName();
     public abstract Ticket getAccessTicket();
     public abstract PermissionCollection getPermissionCollection();
+
+    public String getName() {
+        return name;
+    };
 
 }

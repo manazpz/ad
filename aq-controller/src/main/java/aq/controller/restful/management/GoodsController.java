@@ -31,6 +31,13 @@ public class GoodsController extends aq.controller.restful.System {
         writerJson(response,out,goodsService.queryGoodsList(jsonObject));
     }
 
+    //商品下拉框
+    @ResponseBody
+    @RequestMapping(value = "goodslist", method=RequestMethod.GET)
+    public void  dropGoodsList(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        writerJson(response,out,goodsService.queryGoodsList(jsonObject));
+    }
 
     //新增商品
     @RequestMapping(value = "/insert",method = RequestMethod.POST)

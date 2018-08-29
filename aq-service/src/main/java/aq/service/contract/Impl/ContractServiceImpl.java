@@ -45,7 +45,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         Map<String,Object> res = new HashMap<>();
         jsonObject.addProperty("service","Contract");
         if(StringUtil.isEmpty(jsonObject.get("flag"))) {
-            jsonObject.addProperty("term",user.getUserId());
+            jsonObject.addProperty("username",user.getName());
         }
         JsonObject contractMapJson = query(jsonObject, (map) -> {
             return contractDao.selectContracList(map);
@@ -221,11 +221,11 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS Z");
            String d1 = res.get("signTime").toString().replace("Z", " UTC");
            String d2 = res.get("expireTime").toString().replace("Z", " UTC");
-           if(d1.indexOf("ABC")!=-1){
+           if(d1.indexOf("UTC")!=-1){
                Date signTime = format.parse(d1);
                rest.put("signTime", signTime);
            }
-           if(d2.indexOf("ABC")!=-1){
+           if(d2.indexOf("UTC")!=-1){
                Date expireTime = format.parse(d2);
                rest.put("expireTime", expireTime);
            }
@@ -275,7 +275,12 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryContractPartner(JsonObject jsonObject) {
-        jsonObject.addProperty("service","Contract");
+        AbsAccessUser user = Factory.getContext().user();
+        Map<String, Object> res = new HashMap<>();
+        jsonObject.addProperty("service", "Contract");
+        if (StringUtil.isEmpty(jsonObject.get("flag"))) {
+            jsonObject.addProperty("username", user.getName());
+        }
         return query(jsonObject,(map)->{
             return contractDao.selectContracPartner(map);
         });
@@ -342,7 +347,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         if(maps.size() == 0){
             res.put("no","10");
         }else{
-            res.put("no",Integer.parseInt(maps.get(maps.size()).get("no").toString()) +10);
+            res.put("no",Integer.parseInt(maps.get(maps.size()-1).get("no").toString()) +10);
         }
         res.put("user",res.get("user"));
         res.put("types",res.get("types"));

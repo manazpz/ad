@@ -39,6 +39,14 @@ public class CustomerController extends aq.controller.restful.System {
         writerJson(response,out,customerService.queryCustomerList(jsonObject));
     }
 
+    //客户下拉框
+    @ResponseBody
+    @RequestMapping(value = "droplist", method=RequestMethod.GET)
+    public void  droplist(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        writerJson(response,out,customerService.queryCustomerList(jsonObject));
+    }
+
     //更新客户
     @RequestMapping(value = "/update",method = RequestMethod.POST)
     @Permission(RequireLogin=true, PermissionType = PermissionType.ACTION, value = {"7496770D-6772-4CC1-9508-D07B9DD880AA"},name = {"客户-更新"})

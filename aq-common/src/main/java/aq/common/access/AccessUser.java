@@ -97,7 +97,7 @@ public final class AccessUser  extends AbsAccessUser{
     }
 
     @Override
-    String getName() {
+    public String getName() {
         return this.name;
     }
 
