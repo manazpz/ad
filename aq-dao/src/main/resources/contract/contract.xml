@@ -126,6 +126,7 @@
             AND ZG.FD_CUSTOMER_A = #{term} OR  ZG.FD_CUSTOMER_B = #{term}
         </if>
         AND ZG.FD_DELETE != 'Y'
+        GROUP BY ZG.FD_ID
         ORDER BY ZG.FD_STATUS , ZG.FD_SIGN_TIME DESC
         <if test="sort != null">
             ,#{sort}
