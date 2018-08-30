@@ -48,6 +48,9 @@ public interface ContractDao {
     //获取子合同数据
     List<Map<String,Object>> selectContractSubList(Map<String,Object> map);
 
+    //获取子合同详情
+    List<Map<String,Object>> selectContractSubListMain(Map<String,Object> map);
+
     //获取子合同合明细
     List<Map<String,Object>> selectContracSub(Map<String,Object> map);
 

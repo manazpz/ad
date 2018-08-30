@@ -373,9 +373,6 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         AbsAccessUser user = Factory.getContext().user();
         Map<String,Object> res = new HashMap<>();
         jsonObject.addProperty("service","Contract");
-        if(StringUtil.isEmpty(jsonObject.get("flag"))) {
-            jsonObject.addProperty("term",user.getUserId());
-        }
         JsonObject contractMapJson = query(jsonObject, (map) -> {
             return contractDao.selectContractSubList(map);
         });
@@ -385,7 +382,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
             res.clear();
             res.put("id",orderDetailMap.get("id"));
             res.put("no",orderDetailMap.get("NO"));
-            res.put("type","HT");
+            res.put("type",orderDetailMap.get("type"));
             List<Map<String, Object>> maps = contractDao.selectContractGoodList(res);
             List<Map<String, Object>> mapAtta = sysDao.selectContractAttaList(res);
             ArrayList arrayList = new ArrayList();
@@ -398,8 +395,19 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         JsonArray asJsonArray = GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(contractMaps)).getAsJsonArray();
         contractMapJson.get("data").getAsJsonObject().add("items",asJsonArray);
         return contractMapJson;
+
     }
 
+
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
+    @Override
+    public JsonObject queryContractSubtListMain(JsonObject jsonObject) {
+        jsonObject.addProperty("service","Contract");
+        return query(jsonObject,(map)->{
+            return contractDao.selectContractSubListMain(map);
+        });
+    }
 
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
@@ -681,26 +689,25 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     @Override
     public JsonObject queryContractExpnses(JsonObject jsonObject) {
-        jsonObject.addProperty("service","Contract");
+        AbsAccessUser user = Factory.getContext().user();
         Map<String,Object> res = new HashMap<>();
-        return query(jsonObject,(map)->{
-            List<Map<String, Object>> contractMaps = contractDao.selectContractExpnses(map);
-            List nameMaps = new ArrayList<>();
-            List urlMaps = new ArrayList<>();
-            List extendMaps = new ArrayList<>();
-            List sizesMaps = new ArrayList<>();
-            List<Map<String, Object>> listFileMaps = new ArrayList<>();
-            List<Map<String, Object>> fileMaps = new ArrayList<>();
-            for(Map<String,Object> orderDetailMap :contractMaps){
-                res.put("no",orderDetailMap.get("no"));
-                res.put("type","SZ");
-                res.put("id",orderDetailMap.get("id"));
-                List<Map<String, Object>> maps = sysDao.selectContractAttaList(res);
-                orderDetailMap.put("file",maps);
-            }
-
-            return contractMaps;
+        jsonObject.addProperty("service","Contract");
+        JsonObject contractMapJson = query(jsonObject, (map) -> {
+            return contractDao.selectContractExpnses(map);
         });
+        Map contractMap = GsonHelper.getInstance().fromJson(contractMapJson, Map.class);
+        List<Map> contractMaps = (List) ((Map) contractMap.get("data")).get("items");
+        for(Map<String,Object> orderDetailMap :contractMaps) {
+            res.clear();
+            res.put("id",orderDetailMap.get("id"));
+            res.put("no",orderDetailMap.get("no"));
+            res.put("type","SZ");
+            List<Map<String, Object>> mapAtta = sysDao.selectContractAttaList(res);
+            orderDetailMap.put("file",mapAtta);
+        }
+        JsonArray asJsonArray = GsonHelper.getInstanceJsonparser().parse(GsonHelper.getInstance().toJson(contractMaps)).getAsJsonArray();
+        contractMapJson.get("data").getAsJsonObject().add("items",asJsonArray);
+        return contractMapJson;
     }
 
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})

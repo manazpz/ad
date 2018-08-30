@@ -128,6 +128,14 @@ public class ContractController extends aq.controller.restful.System {
         JsonObject jsonObject = HttpUtil.getParameterMap(request);
         writerJson(response,out,contractService.queryContractSubtList(jsonObject));
     }
+    //子合同详情
+    @RequestMapping(value = "subListMain", method=RequestMethod.GET)
+    @Permission(RequireLogin=true, PermissionType = PermissionType.DATA, value = {"7496770D-6772-4CC2-9508-D08B8DD880DB"},name = {"合同-查询"})
+    @ResponseBody
+    public void  contractSubListMain(HttpServletRequest request, HttpServletResponse response, PrintWriter out) throws Exception{
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        writerJson(response,out,contractService.queryContractSubtListMain(jsonObject));
+    }
 
     //新增合同收支明细
     @RequestMapping(value = "/insertExpnses",method = RequestMethod.POST)

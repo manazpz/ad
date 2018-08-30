@@ -320,9 +320,10 @@
 
 
     <!--查询子合同明细-->
-    <select id="selectContractSubList" resultType="java.util.Map" parameterType="java.util.Map">
+    <select id="selectContractSubListMain" resultType="java.util.Map" parameterType="java.util.Map">
       SELECT
             ZG.FD_ID AS id,
+            ZG.FD_TYPE AS type,
             ZG.FD_NUMBER AS number,
             ZG.FD_PARENT AS parent,
             ZG.FD_TITLE AS title,
@@ -334,9 +335,6 @@
             ZCM_B.FD_NAME AS customer_b_Name,
             ZG.FD_STATUS AS statusKey,
             SC. NAME AS statusName,
-            GROUP_CONCAT(SA.FD_NAME) AS attaname,
-            GROUP_CONCAT(SA.FD_URL) AS url,
-            GROUP_CONCAT(SA.FD_EXTEND) AS extend,
             ZG.FD_MONEY_INIT AS money_init,
             ZG.FD_MONEY AS money,
             ZG.FD_PAID AS paid,
@@ -375,11 +373,73 @@
         LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZG.CREATE_USER
         LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZG.LAST_CREATE_USER
         LEFT JOIN system_attachment SA ON SA.FD_REF_ID = ZG.FD_ID
-        LEFT JOIN	ZDEV_CONTRACT_GOODS ZCG ON ZCG.FD_ID = ZG.FD_ID
-				LEFT JOIN ZDEV_GOODS_MAIN ZGM ON ZGM.FD_ID =ZCG.FD_GOODS
+        LEFT JOIN ZDEV_CONTRACT_GOODS ZCG ON ZCG.FD_ID = ZG.FD_ID
+		LEFT JOIN ZDEV_GOODS_MAIN ZGM ON ZGM.FD_ID =ZCG.FD_GOODS
         WHERE
             1 = 1
-        AND SA.FD_TYPE = #{type}
+        AND ZG.FD_ID = #{id}
+        ORDER BY
+            ZG.CREATE_TIME ASC
+    </select>
+
+    <!--查询子合同明细-->
+    <select id="selectContractSubList" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        ZG.FD_ID AS id,
+        ZG.FD_TYPE AS type,
+        ZG.FD_NUMBER AS number,
+        ZG.FD_PARENT AS parent,
+        ZG.FD_TITLE AS title,
+        ZGM.FD_ID AS goods,
+        ZGM.FD_NAME AS goodsname,
+        ZG.FD_CUSTOMER_A AS customerKeyA,
+        ZCM_A.FD_NAME AS customer_a_Name,
+        ZG.FD_CUSTOMER_B AS customerKeyB,
+        ZCM_B.FD_NAME AS customer_b_Name,
+        ZG.FD_STATUS AS statusKey,
+        SC. NAME AS statusName,
+        ZG.FD_MONEY_INIT AS money_init,
+        ZG.FD_MONEY AS money,
+        ZG.FD_PAID AS paid,
+        ZG.FD_UNPAID AS unpaid,
+        ZG.FD_EXPENSES AS expenses,
+        ZG.FD_TAX AS tax,
+        ZG.FD_TAX_LIMIT AS taxlimit,
+        ZG.FD_INCOME AS income,
+        ZG.FD_CURRENCY AS currency,
+        DATE_FORMAT(ZG.FD_SIGN_TIME, '%Y-%m-%d') AS signTime,
+        DATE_FORMAT(
+        ZG.FD_EXPIRE_TIME,
+        '%Y-%m-%d'
+        ) AS expireTime,
+        ZG.CREATE_USER AS createUserId,
+        CREATE_USER.NICK_NAME AS createUserName,
+        ZG.LAST_CREATE_USER AS lastCreateUserId,
+        LAST_CREATE_USER.NICK_NAME AS lastCreateUserName,
+        DATE_FORMAT(
+        ZG.CREATE_TIME,
+        '%Y-%m-%d %H:%i:%S'
+        ) AS createTime,
+        DATE_FORMAT(
+        ZG.LAST_CREATE_TIME,
+        '%Y-%m-%d %H:%i:%S'
+        ) AS lastCreateTime,
+        ZG.FD_STATUS AS STATUS,
+        ZG.FD_REMARK1 AS reamrks1,
+        ZG.FD_DELETE AS del
+        FROM
+        ZDEV_CONTRACT_MAIN ZG
+        LEFT JOIN system_config SC ON SC.KEY_WORD = ZG.FD_STATUS
+        AND SC.TYPE = 'CONTRACT'
+        LEFT JOIN ZDEV_CUSTOMER_MAIN ZCM_A ON ZCM_A.FD_ID = ZG.FD_CUSTOMER_A
+        LEFT JOIN ZDEV_CUSTOMER_MAIN ZCM_B ON ZCM_B.FD_ID = ZG.FD_CUSTOMER_B
+        LEFT JOIN system_administrator CREATE_USER ON CREATE_USER.ID = ZG.CREATE_USER
+        LEFT JOIN system_administrator LAST_CREATE_USER ON LAST_CREATE_USER.ID = ZG.LAST_CREATE_USER
+        LEFT JOIN system_attachment SA ON SA.FD_REF_ID = ZG.FD_ID
+        LEFT JOIN ZDEV_CONTRACT_GOODS ZCG ON ZCG.FD_ID = ZG.FD_ID
+        LEFT JOIN ZDEV_GOODS_MAIN ZGM ON ZGM.FD_ID =ZCG.FD_GOODS
+        WHERE
+        1 = 1
         AND ZG.FD_ID IN (
             SELECT
                 ZCR.FD_SUB_ID
@@ -490,6 +550,7 @@
             SCS. NAME AS costType,
             SCS.KEY_WORD AS costTypeKey,
             ZC.FD_REMARKS AS remarks1,
+            ZCC.FD_TAX_LIMIT AS tax_limit,
             DATE_FORMAT(ZC.CREATE_TIME, '%Y-%m-%d') AS creattime
         FROM
             ZDEV_CONTRACT_EXPENSES ZC
@@ -499,6 +560,7 @@
         AND SC.TYPE = 'TYPEPAY'
         LEFT JOIN system_config SCS ON SCS.KEY_WORD = ZC.FD_COSTTYPE
         AND SCS.TYPE = 'COSTTYPE'
+        LEFT JOIN ZDEV_CONTRACT_MAIN ZCC ON ZCC.FD_ID = ZC.FD_ID
         WHERE
             1 = 1
         AND ZC.FD_ID = #{id}
