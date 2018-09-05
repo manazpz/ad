@@ -915,4 +915,66 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         }
     }
 
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
+    @Override
+    public JsonObject insertCancelApp(JsonObject jsonObject) {
+        AbsAccessUser user = Factory.getContext().user();
+        DecimalFormat df = new DecimalFormat("#.00");
+        Rtn rtn = new Rtn("Contract");
+        Map<String,Object> res = new HashMap<>();
+        Map<String,Object> rest = new HashMap<>();
+        if (user == null) {
+            rtn.setCode(10000);
+            rtn.setMessage("未登录！");
+            return Func.functionRtnToJsonObject.apply(rtn);
+        }
+        res.clear();
+        res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        rest.put("id",UUIDUtil.getUUID());
+        rest.put("type",res.get("type"));
+        rest.put("remarks",res.get("remarks"));
+        rest.put("row_id",res.get("id"));
+        rest.put("status","N");
+        rest.put("createUser",user.getUserId());
+        rest.put("lastCreateUser",user.getUserId());
+        rest.put("createTime",new Date());
+        rest.put("lastCreateTime",new Date());
+        contractDao.insertDelAudit(rest);
+        rtn.setCode(200);
+        rtn.setMessage("success");
+        return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
+    @Override
+    public JsonObject selectdelAuditList(JsonObject jsonObject) {
+        jsonObject.addProperty("service","User");
+        return query(jsonObject,(map)->{
+            return contractDao.selectdelAuditList(map);
+        });
+    }
+
+
+    @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
+    @Override
+    public JsonObject updateAudit(JsonObject jsonObject) {
+        AbsAccessUser user = Factory.getContext().user();
+        DecimalFormat df = new DecimalFormat("#.00");
+        Rtn rtn = new Rtn("Contract");
+        Map<String,Object> res = new HashMap<>();
+        if (user == null) {
+            rtn.setCode(10000);
+            rtn.setMessage("未登录！");
+            return Func.functionRtnToJsonObject.apply(rtn);
+        }
+        res.clear();
+        res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        contractDao.updateAudit(res);
+        rtn.setCode(200);
+        rtn.setMessage("success");
+        return Func.functionRtnToJsonObject.apply(rtn);
+    }
+
+
 }

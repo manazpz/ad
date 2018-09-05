@@ -635,4 +635,62 @@
             AND FD_TYPE = #{types}
     </select>
 
+
+
+    <!--插入子合同数据-->
+    <insert id="insertDelAudit" >
+        INSERT INTO ZDEV_DEL_AUDIT
+        VALUES(#{id},
+        #{row_id},
+        #{type},
+        #{remarks},
+        #{status},
+        #{createUser},
+        #{createTime,jdbcType=TIMESTAMP},
+        #{lastCreateUser},
+        #{lastCreateTime,jdbcType=TIMESTAMP})
+    </insert>
+
+    <!--查询删除申请列表-->
+    <select id="selectdelAuditList" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT
+        ZD.FD_ID AS id,
+        ZCM.FD_TITLE AS title,
+        ZCM.FD_NUMBER AS number,
+        ZD.FD_TYPE AS type,
+        ZD.FD_REMARK AS remarks,
+        DATE_FORMAT(
+        ZD.CREATE_TIME,
+        '%Y-%m-%d'
+        ) AS createTime,
+        SA.NICK_NAME AS createUser
+        FROM
+        ZDEV_DEL_AUDIT ZD
+        LEFT JOIN ZDEV_CONTRACT_EXPENSES ZC ON ZC.FD_ID = ZD.FD_ROW_ID
+        LEFT JOIN ZDEV_CONTRACT_MAIN ZCM ON ZCM.FD_ID = ZC.FD_ID
+        LEFT JOIN system_administrator SA ON SA.ID = ZD.CREATE_USER
+        WHERE 1=1
+        AND ZD.FD_STATUS = 'N'
+        <if test="type != null and type != ''">
+            AND ZD.FD_TYPE = #{type}
+        </if>
+    </select>
+
+
+    <!--删除/恢复合同信息-->
+    <update id="updateAudit" parameterType="java.util.Map">
+        UPDATE ZDEV_DEL_AUDIT ZG
+        <trim prefix="set" suffixOverrides=",">
+            <if test="status!=null and status != ''">
+                ZG.FD_STATUS = #{status},
+            </if>
+        </trim>
+        WHERE 1=1
+        <if test="id!=null and id != ''">
+            AND ZG.FD_ID = #{id}
+        </if>
+
+    </update>
+
+
 </mapper>

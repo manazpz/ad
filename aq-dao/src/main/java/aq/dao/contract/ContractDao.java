@@ -78,8 +78,13 @@ public interface ContractDao {
     //删除合同商品信息
     int deleteContractGoodList(Map<String,Object> map);
 
+    //删除合同商品信息
+    int insertDelAudit(Map<String,Object> map);
 
+    //删除申请查询
+    List<Map<String,Object>> selectdelAuditList(Map<String,Object> map);
 
-
+    //删除申请审批
+    int updateAudit(Map<String,Object> map);
 
 }

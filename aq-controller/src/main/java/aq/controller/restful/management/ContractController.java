@@ -279,4 +279,26 @@ public class ContractController extends aq.controller.restful.System {
         headers.setContentLength(file.length());
         return new ResponseEntity<byte[]>(FileUtils.readFileToByteArray(file), headers, status);
     }
+
+    //删除附件
+    @RequestMapping(value = "/createCancelApp",method = RequestMethod.POST)
+    @ResponseBody
+    public void createCancelApp(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,contractService.insertCancelApp(requestJson));
+    }
+
+    //查询删除申请
+    @RequestMapping(value = "/delAuditList",method = RequestMethod.GET)
+    @ResponseBody
+    public void delAuditList(HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        JsonObject jsonObject = HttpUtil.getParameterMap(request);
+        writerJson(response,out,contractService.selectdelAuditList(jsonObject));
+    }
+
+    //删除申请审批
+    @RequestMapping(value = "/updateAudit",method = RequestMethod.POST)
+    @ResponseBody
+    public void updateAudit(@RequestBody JsonObject requestJson, HttpServletRequest request, HttpServletResponse response, PrintWriter out){
+        writerJson(response,out,contractService.updateAudit(requestJson));
+    }
 }

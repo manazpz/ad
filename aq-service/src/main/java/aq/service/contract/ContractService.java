@@ -66,7 +66,12 @@ public interface ContractService extends BaseService {
     //刪除附件
     JsonObject deleteAtta(JsonObject jsonObject);
 
+    //刪除附件
+    JsonObject insertCancelApp(JsonObject jsonObject);
 
+    //删除申请查询
+    JsonObject selectdelAuditList(JsonObject jsonObject);
 
-
+    //申请查询审批
+    JsonObject updateAudit(JsonObject jsonObject);
 }
