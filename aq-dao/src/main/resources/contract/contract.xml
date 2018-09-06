@@ -642,6 +642,7 @@
         INSERT INTO ZDEV_DEL_AUDIT
         VALUES(#{id},
         #{row_id},
+        #{no},
         #{type},
         #{remarks},
         #{status},
@@ -655,6 +656,8 @@
     <select id="selectdelAuditList" resultType="java.util.Map" parameterType="java.util.Map">
         SELECT
         ZD.FD_ID AS id,
+        ZD.FD_NO AS no,
+        ZD.FD_ROW_ID AS row_id,
         ZCM.FD_TITLE AS title,
         ZCM.FD_NUMBER AS number,
         ZD.FD_TYPE AS type,
@@ -673,6 +676,9 @@
         AND ZD.FD_STATUS = 'N'
         <if test="type != null and type != ''">
             AND ZD.FD_TYPE = #{type}
+        </if>
+        <if test="id != null and id != ''">
+            AND ZD.FD_ID = #{id}
         </if>
     </select>
 

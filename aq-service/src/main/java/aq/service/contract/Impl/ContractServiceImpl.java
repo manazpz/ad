@@ -933,6 +933,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
         rest.put("id",UUIDUtil.getUUID());
         rest.put("type",res.get("type"));
+        rest.put("no",res.get("no"));
         rest.put("remarks",res.get("remarks"));
         rest.put("row_id",res.get("id"));
         rest.put("status","N");
@@ -963,6 +964,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         DecimalFormat df = new DecimalFormat("#.00");
         Rtn rtn = new Rtn("Contract");
         Map<String,Object> res = new HashMap<>();
+        Map<String,Object> rest = new HashMap<>();
         if (user == null) {
             rtn.setCode(10000);
             rtn.setMessage("未登录！");
@@ -970,7 +972,17 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         }
         res.clear();
         res = GsonHelper.getInstance().fromJson(jsonObject,Map.class);
+        rest.put("id",res.get("id"));
+        List<Map<String, Object>> maps = contractDao.selectdelAuditList(rest);
         contractDao.updateAudit(res);
+        if("Y".equals(res.get("status"))){
+            if(maps.size()>0){
+                rest.clear();
+                rest.put("id",maps.get(0).get("row_id"));
+                rest.put("no",maps.get(0).get("no"));
+            }
+            contractDao.deleteContracExpenses(rest);
+        }
         rtn.setCode(200);
         rtn.setMessage("success");
         return Func.functionRtnToJsonObject.apply(rtn);

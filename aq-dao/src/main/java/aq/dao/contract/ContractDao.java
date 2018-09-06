@@ -62,7 +62,7 @@ public interface ContractDao {
     int updateContractPartner(Map<String,Object> map);
 
 
-    //删除父子合同关系表
+    //删除收支明细
     int deleteContracExpenses(Map<String,Object> map);
 
     //获取合同收支明细
