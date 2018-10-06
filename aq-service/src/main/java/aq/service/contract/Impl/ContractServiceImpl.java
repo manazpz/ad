@@ -191,6 +191,7 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
     @Override
     public JsonObject updateContract(JsonObject jsonObject) {
         AbsAccessUser user = Factory.getContext().user();
+        DecimalFormat df = new DecimalFormat("#.00");
         Rtn rtn = new Rtn("Contract");
         Map<String,Object> res = new HashMap<>();
         Map<String,Object> rest = new HashMap<>();
@@ -214,9 +215,13 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         rest.put("paid", Double.parseDouble(res.get("paid").equals("")? "0" :res.get("paid").toString().replace(",", "")));
         if(res.get("unpaid") != null) rest.put("unpaid", Double.parseDouble(res.get("unpaid").equals("")? "0" :res.get("unpaid").toString().replace(",", "")));
         if(res.get("expenses") != null) rest.put("expenses", Double.parseDouble(res.get("expenses").equals("")? "0" :res.get("expenses").toString().replace(",", "")));
-        if(res.get("income") != null) rest.put("income", Double.parseDouble(res.get("income").equals("")? "0" :res.get("income").toString().replace(",", "")));
-        rest.put("tax", Double.parseDouble(res.get("tax").equals("")? "0" :res.get("tax").toString().replace(",", "")));
         rest.put("taxlimit", Double.parseDouble(res.get("taxlimit").equals("")? "0" :res.get("taxlimit").toString().replace(",", "")));
+        if(res.get("paid") != null){
+            double paid = Double.parseDouble(res.get("paid").toString().replace(",",""));
+            double taxlimits = Double.parseDouble(res.get("taxlimit").toString());
+            rest.put("tax", df.format(paid*taxlimits/100));
+            rest.put("income", df.format(paid - Double.parseDouble(rest.get("expenses").toString())- Double.parseDouble(rest.get("tax").toString())));
+        }
        try {
            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS Z");
            String d1 = res.get("signTime").toString().replace("Z", " UTC");
@@ -237,6 +242,21 @@ public class ContractServiceImpl extends BaseServiceImpl  implements ContractSer
         rest.put("updateTime",new Date());
         contractDao.updateContract(rest);
         updataAtta(user, res, rest,"HT");
+//        rest.clear();
+//        rest.put("id",res.get("id"));
+//        List<Map<String, Object>> maprest = contractDao.selectContracExpenses(rest);
+//        if(maprest.size()>0){
+//            for(int s = 0; s < maprest.size(); s++){
+//                //税额
+//                double taxlimit = Double.parseDouble(res.get("taxlimit").toString());
+//                if("SK".equals(maprest.get(s).get("typePayes"))){
+//                    rest.put("no",(s+1)*10);
+//                    double amount = Double.parseDouble(maprest.get(s).get("amount").toString());
+//                    rest.put("amount",amount -(amount*taxlimit/100));
+//                    contractDao.updateContractExpenses(rest);
+//                }
+//            }
+//        }
         List<Map<String, Object>> mapgoods = (List<Map<String, Object>>) res.get("goods");
         contractDao.deleteContractGoodList(res);
         for(int i = 0; i < mapgoods.size(); i++){
